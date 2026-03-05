@@ -9,6 +9,7 @@
           "taskName": "2026 年 3 月综合巡检",
           "address": "浙江省宁波市鄞州区菁华路188号",
           "deadline": "3 月 31 日前完成",
+          "plannedAt": "2026-03-01",
           "status": "active"
         },
         {
@@ -17,6 +18,7 @@
           "taskName": "2026 年 3 月综合巡检",
           "address": "浙江省宁波市鄞州区菁华路188号",
           "deadline": "3 月 31 日前完成",
+          "plannedAt": "2026-03-15",
           "status": "active"
         }
       ]
@@ -29,12 +31,14 @@
           "id": 3,
           "parkName": "华南物流枢纽园区",
           "taskName": "2026 年 4 月综合巡检",
+          "plannedAt": "2026-04-01",
           "status": "pending"
         },
         {
           "id": 4,
           "parkName": "长三角新能源产业园",
           "taskName": "2026 年 4 月综合巡检",
+          "plannedAt": "2026-04-15",
           "status": "pending"
         }
       ]

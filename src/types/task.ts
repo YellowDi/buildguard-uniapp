@@ -51,6 +51,8 @@ export interface Task {
   taskName: string
   address?: string
   deadline?: string
+  /** 计划开始/执行时间（时间轴展示用，如 "2026-04-01"） */
+  plannedAt?: string
   completedAt?: string
   status: TaskStatus
 }

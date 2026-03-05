@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type { TaskSection } from '../../types/task'
 import { fetchTaskList } from '../../api/task'
 import UserCard from '../user/UserCard.vue'
+import PlannedTaskDrawer from './PlannedTaskDrawer.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,12 +23,19 @@ const sentinel = ref<HTMLElement | null>(null)
 const isStuck = ref(false)
 
 const showParkFilter = ref(false)
+const showPlannedDrawer = ref(false)
 const selectedPark = ref<string | null>(null)
 const filterBtnRef = ref<HTMLElement | null>(null)
 
 const parkNames = computed(() => {
   const tasks = completedSection.value?.tasks ?? []
   return [...new Set(tasks.map(t => t.parkName))]
+})
+
+const plannedTasks = computed(() => {
+  const active = activeSection.value?.tasks ?? []
+  const pending = pendingSection.value?.tasks ?? []
+  return [...active, ...pending]
 })
 
 const filteredCompletedTasks = computed(() => {
@@ -185,6 +193,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="flex w-full items-center justify-center rounded-lg bg-[rgba(0,0,0,0.05)] py-2"
+              @click="showPlannedDrawer = true"
             >
               <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">查看更多计划任务</span>
             </button>
@@ -283,6 +292,12 @@ onBeforeUnmount(() => {
       </div>
 
     </div>
+
+    <PlannedTaskDrawer
+      :visible="showPlannedDrawer"
+      :tasks="plannedTasks"
+      @close="showPlannedDrawer = false"
+    />
   </section>
 </template>
 
