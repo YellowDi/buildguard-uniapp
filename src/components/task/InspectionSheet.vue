@@ -12,7 +12,7 @@ const emit = defineEmits<{
   (e: 'save', payload: { status: CheckItemStatus; photos: string[]; description: string; impact: string }): void
 }>()
 
-const selectedStatus = ref<CheckItemStatus>('normal')
+const selectedStatus = ref<CheckItemStatus>('unchecked')
 const photos = ref<string[]>([])
 const description = ref('')
 const impact = ref('')
@@ -49,7 +49,7 @@ watch(() => props.visible, (val) => {
   if (val) {
     lockBodyScroll()
     if (props.item) {
-      selectedStatus.value = props.item.status === 'unchecked' ? 'normal' : props.item.status
+      selectedStatus.value = props.item.status
       photos.value = props.item.photos ? [...props.item.photos] : []
       description.value = props.item.description ?? ''
       impact.value = props.item.impact ?? ''
