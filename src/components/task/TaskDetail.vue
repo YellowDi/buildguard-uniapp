@@ -52,6 +52,17 @@ const progressPercent = computed(() =>
   totalItems.value === 0 ? 0 : Math.round((checkedItems.value / totalItems.value) * 100)
 )
 
+/** 当前建筑中第一个未检查项 id，用于「继续巡检」滚动定位 */
+const firstUncheckedItemId = computed(() => {
+  const b = currentBuilding.value
+  if (!b) return null
+  for (const cat of b.categories) {
+    const item = cat.items.find((i: CheckItem) => i.status === 'unchecked')
+    if (item) return item.id
+  }
+  return null
+})
+
 const statusLabel = computed(() => {
   if (!task.value) return ''
   switch (task.value.status) {
@@ -76,6 +87,36 @@ const statusIconColor = computed(() => {
     case 'active': return 'text-[#171717]'
     case 'pending': return 'text-[#FA7319]'
     case 'completed': return 'text-[#1FC16B]'
+  }
+})
+
+/** 底部操作按钮配置：按任务状态展示不同按钮 */
+type BottomAction = { key: string; label: string; primary?: boolean; icon?: string }
+const bottomActions = computed((): BottomAction[] => {
+  const t = task.value
+  if (!t) return []
+  switch (t.status) {
+    case 'pending':
+      // 待完成：开始巡检、导航过去、电话联系
+      return [
+        { key: 'start', label: '开始巡检', primary: true, icon: 'ri-play-circle-line' },
+        { key: 'navigate', label: '导航过去', icon: 'ri-map-pin-line' },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+      ]
+    case 'active':
+      // 进行中：继续巡检、电话联系
+      return [
+        { key: 'continue', label: '继续巡检', primary: true, icon: 'ri-play-circle-line' },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+      ]
+    case 'completed':
+      // 已完成：查看报告、电话联系
+      return [
+        { key: 'report', label: '查看报告', primary: true, icon: 'ri-file-list-3-line' },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+      ]
+    default:
+      return [{ key: 'call', label: '电话联系', icon: 'ri-phone-line' }]
   }
 })
 
@@ -144,6 +185,62 @@ function selectBuilding(index: number) {
   if (index === selectedBuildingIndex.value) return
   selectedBuildingIndex.value = index
   expandedCategoryIds.value = []
+}
+
+/** 底部操作：导航过去 */
+function onNavigate() {
+  const t = task.value
+  if (!t?.address) return
+  const q = encodeURIComponent(t.address)
+  window.open(`https://maps.google.com/maps?q=${q}`, '_blank', 'noopener')
+}
+
+/** 底部操作：电话联系 */
+function onCall() {
+  const t = task.value
+  if (!t?.phone) return
+  window.location.href = `tel:${t.phone}`
+}
+
+/** 底部操作：继续巡检（滚动到第一个未检查项） */
+function onContinue() {
+  const firstUnchecked = document.querySelector('[data-unchecked-item]')
+  firstUnchecked?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+/** 底部操作：查看报告（占位，后续可跳转报告页） */
+function onReport() {
+  // TODO: 跳转至报告页 router.push({ name: 'TaskReport', params: { id: taskId } })
+  console.log('查看报告', taskId.value)
+}
+
+/** 底部操作：开始巡检（待完成状态下将任务设为进行中） */
+function onStartInspection() {
+  if (task.value?.status !== 'pending') return
+  task.value.status = 'active'
+  // TODO: 调用接口更新任务状态后，底部栏会切换为「继续巡检」「电话联系」
+}
+
+function handleBottomAction(key: string) {
+  switch (key) {
+    case 'start':
+      onStartInspection()
+      break
+    case 'navigate':
+      onNavigate()
+      break
+    case 'call':
+      onCall()
+      break
+    case 'continue':
+      onContinue()
+      break
+    case 'report':
+      onReport()
+      break
+    default:
+      break
+  }
 }
 
 function onSheetSave(payload: { status: CheckItemStatus; photos: string[]; description: string; impact: string }) {
@@ -266,16 +363,6 @@ onMounted(() => loadTask(taskId.value))
             <i class="ri-calendar-line text-[20px] leading-[20px] text-[#A3A3A3]" />
             <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ task.deadline }}</span>
           </div>
-          <!-- Contact (from parks.json) -->
-          <div v-if="task.contact" class="flex items-center gap-2">
-            <i class="ri-user-line text-[20px] leading-[20px] text-[#A3A3A3]" />
-            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ task.contact }}</span>
-          </div>
-          <!-- Phone (from parks.json) -->
-          <div v-if="task.phone" class="flex items-center gap-2">
-            <i class="ri-phone-line text-[20px] leading-[20px] text-[#A3A3A3]" />
-            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ task.phone }}</span>
-          </div>
         </div>
 
         <!-- Progress Bar -->
@@ -296,22 +383,6 @@ onMounted(() => loadTask(taskId.value))
             />
           </div>
         </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div v-if="task" class="mt-4 flex gap-2">
-        <button
-          type="button"
-          class="flex h-10 flex-1 items-center justify-center rounded-md bg-[rgba(0,0,0,0.05)]"
-        >
-          <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">导航过去</span>
-        </button>
-        <button
-          type="button"
-          class="flex h-10 flex-1 items-center justify-center rounded-md bg-[rgba(0,0,0,0.05)]"
-        >
-          <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">电话联系</span>
-        </button>
       </div>
 
       <!-- Segment Divider -->
@@ -401,6 +472,7 @@ onMounted(() => loadTask(taskId.value))
                 <button
                   type="button"
                   class="flex h-[54px] w-full items-center gap-2 text-left transition-colors active:bg-black/[0.02]"
+                  :data-unchecked-item="item.status === 'unchecked' && item.id === firstUncheckedItemId ? '' : undefined"
                   @click="openSheet(item)"
                 >
                   <div class="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -442,6 +514,29 @@ onMounted(() => loadTask(taskId.value))
         </div>
       </div>
 
+    </div>
+
+    <!-- 底部操作栏：按任务状态展示不同按钮 -->
+    <div
+      v-if="task && bottomActions.length"
+      class="bottom-actions shrink-0 border-t border-[rgba(0,0,0,0.08)] bg-white p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]"
+    >
+      <div class="flex gap-2">
+        <button
+          v-for="action in bottomActions"
+          :key="action.key"
+          type="button"
+          class="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg text-[14px] font-medium leading-[20px] transition-colors active:opacity-90"
+          :class="action.primary
+            ? 'bg-[#171717] text-white'
+            : 'bg-[rgba(0,0,0,0.06)] text-[#5C5C5C]'"
+          :disabled="action.key === 'call' && !task.phone"
+          @click="handleBottomAction(action.key)"
+        >
+          <i v-if="action.icon" :class="[action.icon, 'text-[18px]']" />
+          <span>{{ action.label }}</span>
+        </button>
+      </div>
     </div>
 
     <InspectionSheet
