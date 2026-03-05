@@ -9,7 +9,7 @@ const route = useRoute()
 const router = useRouter()
 
 const task = ref<TaskDetail | null>(null)
-const expandedCategoryId = ref<number | null>(null)
+const expandedCategoryIds = ref<number[]>([])
 const sheetVisible = ref(false)
 const activeItem = ref<CheckItem | null>(null)
 
@@ -58,7 +58,12 @@ const statusIconColor = computed(() => {
 })
 
 function toggleCategory(cat: InspectionCategory) {
-  expandedCategoryId.value = expandedCategoryId.value === cat.id ? null : cat.id
+  const ids = expandedCategoryIds.value
+  if (ids.includes(cat.id)) {
+    expandedCategoryIds.value = ids.filter((id) => id !== cat.id)
+  } else {
+    expandedCategoryIds.value = [...ids, cat.id]
+  }
 }
 
 function categoryStats(cat: InspectionCategory) {
@@ -280,7 +285,7 @@ onMounted(async () => {
           <button
             type="button"
             class="flex w-full px-4 text-left transition-colors active:bg-black/[0.02]"
-            :class="expandedCategoryId === cat.id ? 'flex-col pt-4 pb-4' : 'h-[56px] items-center'"
+            :class="expandedCategoryIds.includes(cat.id) ? 'flex-col pt-4 pb-4' : 'h-[56px] items-center'"
             @click="toggleCategory(cat)"
           >
             <div class="flex w-full items-baseline gap-2">
@@ -290,11 +295,11 @@ onMounted(async () => {
               </span>
               <i
                 class="ri-arrow-down-s-line shrink-0 self-center text-[22px] leading-[22px] text-[#A3A3A3] transition-transform duration-300 ease-out"
-                :class="expandedCategoryId === cat.id ? 'rotate-180' : ''"
+                :class="expandedCategoryIds.includes(cat.id) ? 'rotate-180' : ''"
               />
             </div>
             <p
-              v-if="expandedCategoryId === cat.id && cat.description"
+              v-if="expandedCategoryIds.includes(cat.id) && cat.description"
               class="mt-1 text-[13px] leading-[20px] text-[#5C5C5C]"
             >
               {{ cat.description }}
@@ -309,7 +314,7 @@ onMounted(async () => {
             @leave="onExpandLeave"
             @after-leave="onExpandAfterLeave"
           >
-            <div v-if="expandedCategoryId === cat.id">
+            <div v-if="expandedCategoryIds.includes(cat.id)">
               <div class="mx-4 h-px bg-[rgba(0,0,0,0.1)]" />
 
               <div
