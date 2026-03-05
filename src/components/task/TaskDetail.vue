@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import type { TaskDetail, InspectionCategory, CheckItem, CheckItemStatus } from '../../types/task'
+import type { TaskDetail, Building, InspectionCategory, CheckItem, CheckItemStatus } from '../../types/task'
 import { fetchTaskDetail } from '../../api/task'
 import InspectionSheet from './InspectionSheet.vue'
 
@@ -11,18 +11,41 @@ const task = ref<TaskDetail | null>(null)
 const expandedCategoryIds = ref<number[]>([])
 const sheetVisible = ref(false)
 const activeItem = ref<CheckItem | null>(null)
+/** 当前选中的建筑索引（多建筑时用于切换） */
+const selectedBuildingIndex = ref(0)
 
 const taskId = computed(() => Number(route.params.id))
 
+/** 归一化建筑列表：有 buildings 用 buildings，否则用 categories 包装为「园区整体」单建筑 */
+const buildingsList = computed((): Building[] => {
+  const t = task.value
+  if (!t) return []
+  if (t.buildings?.length) return t.buildings
+  if (t.categories?.length)
+    return [{ id: 0, name: '园区整体', categories: t.categories }]
+  return []
+})
+
+const currentBuilding = computed(() => buildingsList.value[selectedBuildingIndex.value] ?? null)
+
+/** 整个任务（所有建筑）的巡检项总数与已检查数，用于顶部进度条 */
 const totalItems = computed(() =>
-  task.value?.categories.reduce((sum, cat) => sum + cat.items.length, 0) ?? 0
+  buildingsList.value.reduce(
+    (sum, b) => sum + b.categories.reduce((s, c) => s + c.items.length, 0),
+    0,
+  )
 )
 
 const checkedItems = computed(() =>
-  task.value?.categories.reduce(
-    (sum, cat) => sum + cat.items.filter(i => i.status !== 'unchecked').length,
+  buildingsList.value.reduce(
+    (sum, b) =>
+      sum +
+      b.categories.reduce(
+        (s, c) => s + c.items.filter((i: CheckItem) => i.status !== 'unchecked').length,
+        0,
+      ),
     0,
-  ) ?? 0
+  )
 )
 
 const progressPercent = computed(() =>
@@ -71,6 +94,16 @@ function categoryStats(cat: InspectionCategory) {
   return { total, done }
 }
 
+/** 每栋建筑的巡检进度，用于切换按钮上展示 */
+function buildingStats(b: Building) {
+  const total = b.categories.reduce((s, c) => s + c.items.length, 0)
+  const done = b.categories.reduce(
+    (s, c) => s + c.items.filter((i: CheckItem) => i.status !== 'unchecked').length,
+    0,
+  )
+  return { total, done }
+}
+
 function itemResultLabel(status: string) {
   switch (status) {
     case 'normal': return '一切正常'
@@ -105,6 +138,12 @@ function openSheet(item: CheckItem) {
 
 function closeSheet() {
   sheetVisible.value = false
+}
+
+function selectBuilding(index: number) {
+  if (index === selectedBuildingIndex.value) return
+  selectedBuildingIndex.value = index
+  expandedCategoryIds.value = []
 }
 
 function onSheetSave(payload: { status: CheckItemStatus; photos: string[]; description: string; impact: string }) {
@@ -167,9 +206,23 @@ function onExpandAfterLeave(el: Element) {
   element.style.opacity = ''
 }
 
-onMounted(async () => {
-  task.value = await fetchTaskDetail(taskId.value)
-})
+watch(
+  () => buildingsList.value.length,
+  (len) => {
+    if (len > 0 && selectedBuildingIndex.value >= len)
+      selectedBuildingIndex.value = 0
+  },
+)
+
+async function loadTask(id: number) {
+  task.value = await fetchTaskDetail(id)
+  selectedBuildingIndex.value = 0
+  expandedCategoryIds.value = []
+}
+
+watch(taskId, (id) => { loadTask(id) }, { immediate: false })
+
+onMounted(() => loadTask(taskId.value))
 </script>
 
 <template>
@@ -253,14 +306,43 @@ onMounted(async () => {
 
       <!-- Segment Divider -->
       <div v-if="task" class="segment-divider my-4 shrink-0" />
+      
+      <!-- Building Switcher（多建筑时显示） -->
+      <div v-if="task && buildingsList.length > 1" class="mb-4 grid grid-cols-3 gap-2.5">
+          <button
+            v-for="(b, idx) in buildingsList"
+            :key="b.id"
+            type="button"
+            class="building-tab flex min-w-0 flex-col items-start rounded-md px-3 py-3 text-left transition-all duration-200"
+            :class="selectedBuildingIndex === idx
+              ? 'building-tab--active'
+              : 'building-tab--inactive'"
+            @click="selectBuilding(idx)"
+          >
+            <span
+              class="block text-[14px] font-semibold leading-[20px]"
+              :class="selectedBuildingIndex === idx ? 'text-white' : 'text-[#171717]'"
+            >
+              {{ b.name }}
+            </span>
+            <span
+              class="mt-0.5 block text-[12px] tabular-nums leading-[16px]"
+              :class="selectedBuildingIndex === idx ? 'text-white/80' : 'text-[#5C5C5C]'"
+            >
+              {{ buildingStats(b).done }}/{{ buildingStats(b).total }} 已检查
+            </span>
+          </button>
+      </div>
 
       <!-- Section Title: font_2:1777 = 16px Bold, paint_2:1736 = #171717 -->
-      <h2 v-if="task" class="text-[16px] font-bold leading-[24px] text-[#171717]">巡检项目</h2>
+      <h2 v-if="task" class="text-[16px] font-bold leading-[24px] text-[#171717]">
+        {{ currentBuilding ? `${currentBuilding.name} · 巡检项目` : '巡检项目' }}
+      </h2>
 
-      <!-- Inspection Category Accordions -->
-      <div v-if="task" class="mt-4 flex flex-col gap-4 pb-8">
+      <!-- Inspection Category Accordions（当前建筑） -->
+      <div v-if="task && currentBuilding" class="mt-4 flex flex-col gap-4 pb-8">
         <div
-          v-for="cat in task.categories"
+          v-for="cat in currentBuilding.categories"
           :key="cat.id"
           class="card-shadow overflow-hidden rounded-xl bg-white"
         >
@@ -372,6 +454,17 @@ onMounted(async () => {
     0px 10px 10px -5px rgba(23, 23, 23, 0.04),
     0px 20px 20px -10px rgba(23, 23, 23, 0.04),
     inset 0px -1px 1px -0.5px rgba(23, 23, 23, 0.06);
+}
+
+
+.building-tab--active {
+  background: linear-gradient(145deg, #171717 0%, #2d2d2d 100%);
+}
+.building-tab--inactive {
+  background: #F5F5F5;
+}
+.building-tab--inactive:active {
+  background: #EBEBEB;
 }
 
 .segment-divider {
