@@ -96,6 +96,8 @@ export interface TaskDetail {
   parkName: string
   taskName: string
   address: string
+  /** 开始时间（如 "3 月 1 日"），待完成任务展示「还有xx天开始」用 */
+  startDate?: string
   deadline: string
   status: TaskStatus
   completedAt?: string
@@ -118,6 +120,8 @@ export interface TaskDetailRaw {
   parkName?: string
   taskName: string
   address?: string
+  /** 开始时间（如 "3 月 1 日"） */
+  startDate?: string
   deadline: string
   status: TaskStatus
   completedAt?: string

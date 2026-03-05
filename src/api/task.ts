@@ -61,6 +61,7 @@ function resolveTaskDetail(raw: TaskDetailRaw): TaskDetail {
     parkName: park?.name ?? raw.parkName ?? '',
     taskName: raw.taskName,
     address: park?.address ?? raw.address ?? '',
+    startDate: raw.startDate,
     deadline: raw.deadline,
     status: raw.status,
     completedAt: raw.completedAt,

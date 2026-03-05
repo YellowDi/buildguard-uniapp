@@ -90,6 +90,76 @@ const statusIconColor = computed(() => {
   }
 })
 
+/** 将 YYYY-MM-DD 格式化为「YYYY 年 M 月 D 日」 */
+function formatCompletedAt(completedAt: string): string {
+  const [y, m, d] = completedAt.split('-').map(Number)
+  if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return completedAt
+  return `${y} 年 ${m} 月 ${d} 日`
+}
+
+/** 时间行展示文案：待完成为「开始 - 截止」；已完成为「完成巡检时间：日期」；否则为 deadline */
+const deadlineDisplayText = computed(() => {
+  const t = task.value
+  if (!t) return ''
+  if (t.status === 'completed' && t.completedAt)
+    return `${formatCompletedAt(t.completedAt)} 完成巡检`
+  const text = t.status === 'pending' && t.startDate
+    ? `${t.startDate.trim()} - ${t.deadline}`
+    : t.deadline
+  return t.status === 'pending' ? text.replace(/前完成$/, '') : text
+})
+
+const DATE_REG = /(\d+)\s*月\s*(\d+)\s*日/g
+
+/** 从 "X 月 Y 日" 解析为当年日期（仅取 0 点） */
+function parseMonthDay(str: string): Date | null {
+  const m = str.match(/(\d+)\s*月\s*(\d+)\s*日/)
+  if (!m) return null
+  const year = new Date().getFullYear()
+  return new Date(year, parseInt(m[1], 10) - 1, parseInt(m[2], 10))
+}
+
+/** 从 deadline 字符串中解析出开始、截止日期（支持 "3 月 1 日 - 3 月 31 日前完成" 或单日期） */
+function parseDeadlineRange(deadline: string): { start: Date | null; end: Date | null } {
+  const matches = [...deadline.matchAll(DATE_REG)]
+  if (matches.length >= 2) {
+    const start = parseMonthDay(matches[0][0])
+    const end = parseMonthDay(matches[1][0])
+    return { start, end }
+  }
+  if (matches.length === 1) {
+    const end = parseMonthDay(matches[0][0])
+    return { start: null, end }
+  }
+  return { start: null, end: null }
+}
+
+/** 根据任务状态与时间返回小标签文案：待完成用「还有xx天开始」；进行中用「还剩xx天」等；已完成不显示 */
+function timeRemainingLabel(t: TaskDetail): string | null {
+  if (t.status === 'completed') return null
+  const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+  const { start, end } = parseDeadlineRange(t.deadline)
+  const startDate = t.startDate ? parseMonthDay(t.startDate) : start
+  const endDate = end ?? (t.deadline ? parseMonthDay(t.deadline) : null)
+
+  if (t.status === 'pending') {
+    const startForPending = startDate ?? start
+    if (!startForPending) return null
+    const diffMs = startForPending.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+    if (diffDays < 0) return '已可开始'
+    if (diffDays === 0) return '今天开始'
+    return `还有${diffDays}天开始`
+  }
+
+  if (!endDate) return null
+  const diffMs = endDate.getTime() - today.getTime()
+  const diffDays = Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+  if (diffDays < 0) return '已逾期'
+  if (diffDays === 0) return '今天到期'
+  return `还剩${diffDays}天`
+}
+
 /** 底部操作按钮配置：按任务状态展示不同按钮 */
 type BottomAction = { key: string; label: string; primary?: boolean; icon?: string }
 const bottomActions = computed((): BottomAction[] => {
@@ -358,10 +428,16 @@ onMounted(() => loadTask(taskId.value))
             <i class="ri-map-pin-line text-[20px] leading-[20px] text-[#A3A3A3]" />
             <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ task.address }}</span>
           </div>
-          <!-- Deadline: calendar-line 20x20, text 14px Medium #5C5C5C -->
+          <!-- 时间：待完成且有开始时间为「开始 - 截止」，否则仅截止时间 -->
           <div class="flex items-center gap-2">
             <i class="ri-calendar-line text-[20px] leading-[20px] text-[#A3A3A3]" />
-            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ task.deadline }}</span>
+            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ deadlineDisplayText }}</span>
+            <span
+              v-if="timeRemainingLabel(task)"
+              class="rounded-md bg-[#F5F5F5] px-1.5 py-0.5 text-[11px] font-medium leading-[16px] text-[#5C5C5C]"
+            >
+              {{ timeRemainingLabel(task) }}
+            </span>
           </div>
         </div>
 
