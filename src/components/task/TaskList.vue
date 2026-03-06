@@ -155,7 +155,7 @@ onBeforeUnmount(() => {
         <p class="mt-2 text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">{{ errorMessage }}</p>
         <button
           type="button"
-          class="mt-4 rounded-lg bg-[#171717] px-4 py-2 text-[14px] font-medium text-white transition-colors active:bg-[#333333] dark:bg-[#E5E5E5] dark:text-[#171717] dark:active:bg-[#D4D4D4]"
+          class="btn-base btn-primary mt-4 h-10 px-4 text-[14px] leading-[20px]"
           @click="loadTaskList"
         >
           重试
@@ -205,10 +205,10 @@ onBeforeUnmount(() => {
               </div>
               <button
                 type="button"
-                class="flex w-full items-center justify-center rounded-lg bg-[#262626] dark:bg-[#E5E5E5] py-2"
+                class="btn-base btn-primary h-10 w-full px-4 text-[14px] leading-[20px]"
                 @click.stop="router.push(`/task/${task.id}`)"
               >
-                <span class="text-[14px] font-medium leading-[20px] text-white dark:text-[#171717]">开始巡检</span>
+                <span>开始巡检</span>
               </button>
             </div>
           </div>
@@ -250,10 +250,10 @@ onBeforeUnmount(() => {
           <div class="border-t border-[#EBEBEB] dark:border-white/10 p-4">
             <button
               type="button"
-              class="flex w-full items-center justify-center rounded-lg bg-[rgba(0,0,0,0.05)] dark:bg-white/[0.08] py-2"
+              class="btn-base btn-surface h-10 w-full px-4 text-[14px] leading-[20px]"
               @click="showPlannedDrawer = true"
             >
-              <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">查看更多计划任务</span>
+              <span>查看更多计划任务</span>
             </button>
           </div>
         </div>

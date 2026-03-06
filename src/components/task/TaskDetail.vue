@@ -523,7 +523,7 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
           <p class="text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">{{ errorMessage }}</p>
           <button
             type="button"
-            class="rounded-lg bg-[#171717] px-4 py-2 text-[14px] font-medium text-white transition-colors active:bg-[#333333] dark:bg-[#E5E5E5] dark:text-[#171717] dark:active:bg-[#D4D4D4]"
+            class="btn-base btn-primary h-10 px-4 text-[14px] leading-[20px]"
             @click="retryLoad"
           >
             重试
@@ -537,7 +537,7 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
           <p class="text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">任务不存在或已被删除</p>
           <button
             type="button"
-            class="rounded-lg bg-[#171717] px-4 py-2 text-[14px] font-medium text-white transition-colors active:bg-[#333333] dark:bg-[#E5E5E5] dark:text-[#171717] dark:active:bg-[#D4D4D4]"
+            class="btn-base btn-primary h-10 px-4 text-[14px] leading-[20px]"
             @click="router.replace('/')"
           >
             返回任务列表
@@ -744,12 +744,10 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
           v-for="action in bottomActions"
           :key="action.key"
           type="button"
-          class="flex h-11 items-center justify-center gap-1.5 rounded-lg px-4 text-[14px] font-medium leading-[20px] transition-colors active:opacity-90"
+          class="btn-base btn-md"
           :class="[
             action.fillRemaining || !hasFillRemainingAction ? 'min-w-0 flex-1' : 'shrink-0',
-            action.primary
-              ? 'bg-[#171717] dark:bg-[#E5E5E5] text-white dark:text-[#171717]'
-              : 'bg-[rgba(0,0,0,0.06)] dark:bg-white/10 text-[#5C5C5C] dark:text-[#A3A3A3]'
+            action.primary ? 'btn-primary' : 'btn-secondary'
           ]"
           :disabled="action.key === 'call' && !task.phone"
           @click="handleBottomAction(action.key)"

@@ -130,17 +130,17 @@ const checkedList = () => getAllCheckedItems(props.task)
         <div class="shrink-0 border-t border-[#F0F0F0] dark:border-white/10 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] flex gap-2">
           <button
             type="button"
-            class="flex h-11 flex-1 items-center justify-center rounded-lg bg-[rgba(0,0,0,0.06)] dark:bg-white/10 text-[#5C5C5C] dark:text-[#A3A3A3] transition-colors active:opacity-90"
+            class="btn-base btn-secondary btn-md flex-1"
             @click="emit('close')"
           >
-            <span class="text-[15px] font-medium leading-[20px]">返回修改</span>
+            <span>返回修改</span>
           </button>
           <button
             type="button"
-            class="flex h-11 flex-1 items-center justify-center rounded-lg bg-[#171717] dark:bg-[#E5E5E5] text-white dark:text-[#171717] transition-colors active:bg-[#333333] dark:active:bg-[#D4D4D4]"
+            class="btn-base btn-primary btn-md flex-1"
             @click="emit('confirm')"
           >
-            <span class="text-[15px] font-medium leading-[20px]">确认提交</span>
+            <span>确认提交</span>
           </button>
         </div>
       </div>

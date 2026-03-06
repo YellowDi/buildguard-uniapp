@@ -252,10 +252,10 @@ async function handleSave() {
         <div class="shrink-0 border-t border-[#F0F0F0] dark:border-white/10 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
           <button
             type="button"
-            class="flex h-11 w-full items-center justify-center rounded-lg bg-[#171717] dark:bg-[#E5E5E5] transition-colors active:bg-[#333333] dark:active:bg-[#D4D4D4]"
+            class="btn-base btn-primary btn-md w-full"
             @click="handleSave"
           >
-            <span class="text-[15px] font-medium leading-[20px] text-white dark:text-[#171717]">提交结果</span>
+            <span>提交结果</span>
           </button>
         </div>
       </div>
