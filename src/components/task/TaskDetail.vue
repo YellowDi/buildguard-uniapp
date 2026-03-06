@@ -163,7 +163,7 @@ function timeRemainingLabel(t: TaskDetail): string | null {
 }
 
 /** 底部操作按钮配置：按任务状态展示不同按钮 */
-type BottomAction = { key: string; label: string; primary?: boolean; icon?: string }
+type BottomAction = { key: string; label: string; primary?: boolean; icon?: string; fillRemaining?: boolean }
 const bottomActions = computed((): BottomAction[] => {
   const t = task.value
   if (!t) return []
@@ -176,7 +176,7 @@ const bottomActions = computed((): BottomAction[] => {
         { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
       ]
     case 'active':
-      // 进行中：全部完成时显示「提交」，否则「继续巡检」、电话联系
+      // 进行中：全部完成时显示「提交」，否则电话联系（左窄）+ 继续巡检（右撑满）
       if (progressPercent.value === 100) {
         return [
           { key: 'submit', label: '提交', primary: true, icon: 'ri-check-double-line' },
@@ -184,19 +184,24 @@ const bottomActions = computed((): BottomAction[] => {
         ]
       }
       return [
-        { key: 'continue', label: '继续巡检', primary: true, icon: 'ri-play-circle-line' },
         { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'continue', label: '继续巡检', primary: true, icon: 'ri-play-circle-line', fillRemaining: true },
       ]
     case 'completed':
-      // 已完成：查看报告、电话联系
+      // 已完成：电话联系（左窄）+ 查看报告（右撑满）
       return [
-        { key: 'report', label: '查看报告', primary: true, icon: 'ri-file-list-3-line' },
         { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'report', label: '查看报告', primary: true, icon: 'ri-file-list-3-line', fillRemaining: true },
       ]
     default:
       return [{ key: 'call', label: '电话联系', icon: 'ri-phone-line' }]
   }
 })
+
+/** 是否存在「撑满剩余宽度」的按钮（进行中继续巡检 / 已完成查看报告），用于底部栏宽度分配 */
+const hasFillRemainingAction = computed(() =>
+  bottomActions.value.some((a) => a.fillRemaining)
+)
 
 function toggleCategory(cat: InspectionCategory) {
   const ids = expandedCategoryIds.value
@@ -623,10 +628,13 @@ onMounted(() => loadTask(taskId.value))
           v-for="action in bottomActions"
           :key="action.key"
           type="button"
-          class="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg text-[14px] font-medium leading-[20px] transition-colors active:opacity-90"
-          :class="action.primary
-            ? 'bg-[#171717] dark:bg-[#E5E5E5] text-white dark:text-[#171717]'
-            : 'bg-[rgba(0,0,0,0.06)] dark:bg-white/10 text-[#5C5C5C] dark:text-[#A3A3A3]'"
+          class="flex h-11 items-center justify-center gap-1.5 rounded-lg px-4 text-[14px] font-medium leading-[20px] transition-colors active:opacity-90"
+          :class="[
+            action.fillRemaining || !hasFillRemainingAction ? 'min-w-0 flex-1' : 'shrink-0',
+            action.primary
+              ? 'bg-[#171717] dark:bg-[#E5E5E5] text-white dark:text-[#171717]'
+              : 'bg-[rgba(0,0,0,0.06)] dark:bg-white/10 text-[#5C5C5C] dark:text-[#A3A3A3]'
+          ]"
           :disabled="action.key === 'call' && !task.phone"
           @click="handleBottomAction(action.key)"
         >
