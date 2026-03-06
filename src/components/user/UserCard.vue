@@ -77,7 +77,10 @@ onBeforeUnmount(() => {
         <span class="text-[13px] font-medium leading-[18px] text-[#171717] dark:text-[#E5E5E5]">{{ name }}</span>
         <span class="text-[11px] leading-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">已完成 {{ completedCount }} 任务</span>
       </div>
-      <i class="ri-arrow-down-s-line text-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]" />
+      <i
+        class="ri-arrow-down-s-line text-[16px] text-[#5C5C5C] transition-transform duration-300 ease-out dark:text-[#A3A3A3]"
+        :class="showPopover ? 'rotate-180' : ''"
+      />
     </div>
 
     <!-- 选项浮窗（absolute 悬浮不挤压内容；-mt-px 与卡片无缝隙，无独立描边/阴影与背景层融合） -->
