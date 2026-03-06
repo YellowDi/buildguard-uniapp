@@ -107,25 +107,25 @@ function handleSave() {
     <Transition name="sheet">
       <div
         v-if="visible"
-        class="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[430px] flex-col rounded-t-2xl bg-white"
+        class="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[430px] flex-col rounded-t-2xl bg-white dark:bg-[#262626]"
         style="max-height: 85vh"
       >
         <!-- Handle bar -->
         <div class="flex justify-center pt-2 pb-1">
-          <div class="h-1 w-9 rounded-full bg-[#D4D4D4]" />
+          <div class="h-1 w-9 rounded-full bg-[#D4D4D4] dark:bg-[#525252]" />
         </div>
 
         <!-- Header -->
         <div class="flex items-center justify-between px-4 pb-3">
-          <h3 class="text-[16px] font-semibold leading-[24px] text-[#171717]">
+          <h3 class="text-[16px] font-semibold leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
             {{ item?.name }}
           </h3>
           <button
             type="button"
-            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5F5] transition-colors active:bg-[#E5E5E5]"
+            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5F5] dark:bg-[#404040] transition-colors active:bg-[#E5E5E5] dark:active:bg-[#525252]"
             @click="emit('close')"
           >
-            <i class="ri-close-line text-[16px] leading-[16px] text-[#5C5C5C]" />
+            <i class="ri-close-line text-[16px] leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]" />
           </button>
         </div>
 
@@ -134,14 +134,14 @@ function handleSave() {
 
           <!-- Status Tabs -->
           <div class="mb-5">
-            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C]">情况状态</span>
+            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">情况状态</span>
             <div class="flex gap-2">
               <button
                 type="button"
                 class="flex h-10 flex-1 items-center justify-center gap-1 rounded-lg border transition-all duration-200"
                 :class="selectedStatus === 'normal'
-                  ? 'border-[#1FC16B] bg-[#F0FDF4] text-[#1FC16B]'
-                  : 'border-[#E5E5E5] bg-white text-[#5C5C5C]'"
+                  ? 'border-[#1FC16B] bg-[#F0FDF4] dark:bg-[#1FC16B]/20 text-[#1FC16B]'
+                  : 'border-[#E5E5E5] dark:border-white/20 bg-white dark:bg-[#404040] text-[#5C5C5C] dark:text-[#A3A3A3]'"
                 @click="selectedStatus = 'normal'"
               >
                 <i class="ri-checkbox-circle-fill text-[18px] leading-[18px]" />
@@ -151,8 +151,8 @@ function handleSave() {
                 type="button"
                 class="flex h-10 flex-1 items-center justify-center gap-1 rounded-lg border transition-all duration-200"
                 :class="selectedStatus === 'focus'
-                  ? 'border-[#FA7319] bg-[#FFF7ED] text-[#FA7319]'
-                  : 'border-[#E5E5E5] bg-white text-[#5C5C5C]'"
+                  ? 'border-[#FA7319] bg-[#FFF7ED] dark:bg-[#FA7319]/20 text-[#FA7319]'
+                  : 'border-[#E5E5E5] dark:border-white/20 bg-white dark:bg-[#404040] text-[#5C5C5C] dark:text-[#A3A3A3]'"
                 @click="selectedStatus = 'focus'"
               >
                 <i class="ri-alert-line text-[18px] leading-[18px]" />
@@ -162,8 +162,8 @@ function handleSave() {
                 type="button"
                 class="flex h-10 flex-1 items-center justify-center gap-1 rounded-lg border transition-all duration-200"
                 :class="selectedStatus === 'risk'
-                  ? 'border-[#E5484D] bg-[#FEF2F2] text-[#E5484D]'
-                  : 'border-[#E5E5E5] bg-white text-[#5C5C5C]'"
+                  ? 'border-[#E5484D] bg-[#FEF2F2] dark:bg-[#E5484D]/20 text-[#E5484D]'
+                  : 'border-[#E5E5E5] dark:border-white/20 bg-white dark:bg-[#404040] text-[#5C5C5C] dark:text-[#A3A3A3]'"
                 @click="selectedStatus = 'risk'"
               >
                 <i class="ri-error-warning-fill text-[18px] leading-[18px]" />
@@ -174,7 +174,7 @@ function handleSave() {
 
           <!-- Photo Upload -->
           <div class="mb-5">
-            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C]">现场照片</span>
+            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">现场照片</span>
             <div class="flex flex-wrap gap-2">
               <div
                 v-for="(photo, idx) in photos"
@@ -196,7 +196,7 @@ function handleSave() {
               </div>
               <button
                 type="button"
-                class="flex h-[80px] w-[80px] shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-[#D4D4D4] bg-[#FAFAFA] transition-colors active:bg-[#F0F0F0]"
+                class="flex h-[80px] w-[80px] shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-[#D4D4D4] dark:border-[#525252] bg-[#FAFAFA] dark:bg-[#404040] transition-colors active:bg-[#F0F0F0] dark:active:bg-[#525252]"
                 @click="triggerUpload"
               >
                 <i class="ri-camera-line text-[22px] leading-[22px] text-[#A3A3A3]" />
@@ -207,33 +207,33 @@ function handleSave() {
 
           <!-- Problem Description -->
           <div class="mb-5">
-            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C]">问题描述</span>
+            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">问题描述</span>
             <textarea
               v-model="description"
-              class="h-[88px] w-full resize-none rounded-lg border border-[#E5E5E5] bg-[#FAFAFA] px-3 py-2.5 text-[16px] leading-[22px] text-[#171717] outline-none transition-colors placeholder:text-[#A3A3A3] focus:border-[#171717] focus:bg-white"
+              class="h-[88px] w-full resize-none rounded-lg border border-[#E5E5E5] dark:border-white/20 bg-[#FAFAFA] dark:bg-[#404040] px-3 py-2.5 text-[16px] leading-[22px] text-[#171717] dark:text-[#E5E5E5] outline-none transition-colors placeholder:text-[#A3A3A3] focus:border-[#171717] dark:focus:border-[#E5E5E5] focus:bg-white dark:focus:bg-[#525252]"
               placeholder="请描述发现的问题…"
             />
           </div>
 
           <!-- Impact Assessment -->
           <div class="mb-2">
-            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C]">影响评估</span>
+            <span class="mb-2 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">影响评估</span>
             <textarea
               v-model="impact"
-              class="h-[88px] w-full resize-none rounded-lg border border-[#E5E5E5] bg-[#FAFAFA] px-3 py-2.5 text-[16px] leading-[22px] text-[#171717] outline-none transition-colors placeholder:text-[#A3A3A3] focus:border-[#171717] focus:bg-white"
+              class="h-[88px] w-full resize-none rounded-lg border border-[#E5E5E5] dark:border-white/20 bg-[#FAFAFA] dark:bg-[#404040] px-3 py-2.5 text-[16px] leading-[22px] text-[#171717] dark:text-[#E5E5E5] outline-none transition-colors placeholder:text-[#A3A3A3] focus:border-[#171717] dark:focus:border-[#E5E5E5] focus:bg-white dark:focus:bg-[#525252]"
               placeholder="请评估该问题可能造成的影响…"
             />
           </div>
         </div>
 
         <!-- Bottom action -->
-        <div class="shrink-0 border-t border-[#F0F0F0] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+        <div class="shrink-0 border-t border-[#F0F0F0] dark:border-white/10 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
           <button
             type="button"
-            class="flex h-11 w-full items-center justify-center rounded-lg bg-[#171717] transition-colors active:bg-[#333333]"
+            class="flex h-11 w-full items-center justify-center rounded-lg bg-[#171717] dark:bg-[#E5E5E5] transition-colors active:bg-[#333333] dark:active:bg-[#D4D4D4]"
             @click="handleSave"
           >
-            <span class="text-[15px] font-medium leading-[20px] text-white">提交结果</span>
+            <span class="text-[15px] font-medium leading-[20px] text-white dark:text-[#171717]">提交结果</span>
           </button>
         </div>
       </div>

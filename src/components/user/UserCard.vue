@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
         ref="popoverRef"
         v-show="showPopover"
         class="user-card-popover absolute right-0 left-0 top-full z-50 -mt-px overflow-hidden rounded-b-lg bg-white dark:bg-[#262626]"
-        :class="!showPopover && 'mt-1 rounded-lg shadow-lg ring-1 ring-black/5'"
+        :class="!showPopover && 'mt-1 rounded-lg shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
       >
         <button
           type="button"

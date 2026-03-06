@@ -393,29 +393,29 @@ onMounted(() => loadTask(taskId.value))
 </script>
 
 <template>
-  <section class="mx-auto flex h-screen w-full max-w-[430px] flex-col bg-[#EBEBEB]">
+  <section class="mx-auto flex h-screen w-full max-w-[430px] flex-col bg-[#EBEBEB] dark:bg-[#171717]">
     <!-- Scrollable Content -->
     <div class="flex flex-1 flex-col overflow-y-auto px-4">
 
       <!-- Task Info Card -->
-      <div v-if="task" class="card-shadow mt-4 flex flex-col rounded-xl bg-white p-4">
+      <div v-if="task" class="card-shadow mt-4 flex flex-col rounded-xl bg-white dark:bg-[#262626] p-4">
         <!-- Title Row -->
         <div class="flex items-start">
           <div class="flex min-w-0 flex-1 flex-col">
             <!-- parkName: font_2:03875 = 16px Medium, paint_2:1736 = #171717 -->
-            <span class="text-[16px] font-medium leading-[24px] text-[#171717]">
+            <span class="text-[16px] font-medium leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
               {{ task.parkName }}
             </span>
             <!-- taskName: font_3:03453 = 13px Regular, paint_2:2909 = #5C5C5C -->
-            <span class="text-[13px] leading-[20px] text-[#5C5C5C]">
+            <span class="text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
               {{ task.taskName }}
             </span>
           </div>
           <!-- Status Badge -->
-          <div class="flex shrink-0 items-center gap-1 rounded-[6px] border border-[#EBEBEB] bg-white px-1 py-1">
+          <div class="flex shrink-0 items-center gap-1 rounded-[6px] border border-[#EBEBEB] dark:border-white/10 bg-white dark:bg-[#404040] px-1 py-1">
             <i :class="[statusIcon, 'text-[16px] leading-[16px]', statusIconColor]" />
             <!-- font_2:1771 = 12px Medium, paint_2:2909 = #5C5C5C -->
-            <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C]">
+            <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">
               {{ statusLabel }}
             </span>
           </div>
@@ -426,15 +426,15 @@ onMounted(() => loadTask(taskId.value))
           <!-- Address: map-pin-line 20x20, text 14px Medium #5C5C5C -->
           <div class="flex items-center gap-2">
             <i class="ri-map-pin-line text-[20px] leading-[20px] text-[#A3A3A3]" />
-            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ task.address }}</span>
+            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">{{ task.address }}</span>
           </div>
           <!-- 时间：待完成且有开始时间为「开始 - 截止」，否则仅截止时间 -->
           <div class="flex items-center gap-2">
             <i class="ri-calendar-line text-[20px] leading-[20px] text-[#A3A3A3]" />
-            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C]">{{ deadlineDisplayText }}</span>
+            <span class="text-[14px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">{{ deadlineDisplayText }}</span>
             <span
               v-if="timeRemainingLabel(task)"
-              class="rounded-md bg-[#F5F5F5] px-1.5 py-0.5 text-[11px] font-medium leading-[16px] text-[#5C5C5C]"
+              class="rounded-md bg-[#F5F5F5] dark:bg-[#404040] px-1.5 py-0.5 text-[11px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]"
             >
               {{ timeRemainingLabel(task) }}
             </span>
@@ -445,16 +445,16 @@ onMounted(() => loadTask(taskId.value))
         <div class="mt-4 flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
             <!-- font_2:1735 = 14px Medium, paint_2:1736 = #171717 -->
-            <span class="text-[14px] font-medium leading-[20px] text-[#171717]">巡检进度</span>
+            <span class="text-[14px] font-medium leading-[20px] text-[#171717] dark:text-[#E5E5E5]">巡检进度</span>
             <!-- font_2:07947 = 12px Regular, paint_2:2909 = #5C5C5C -->
-            <span class="text-[12px] tabular-nums leading-[16px] text-[#5C5C5C]">
+            <span class="text-[12px] tabular-nums leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">
               {{ checkedItems }} / {{ totalItems }}
             </span>
           </div>
-          <div class="h-1.5 w-full overflow-hidden rounded-full bg-[#EBEBEB]">
+          <div class="h-1.5 w-full overflow-hidden rounded-full bg-[#EBEBEB] dark:bg-[#404040]">
             <div
               class="h-full rounded-full transition-all duration-500 ease-out"
-              :class="progressPercent === 100 ? 'bg-[#1FC16B]' : 'bg-[#171717]'"
+              :class="progressPercent === 100 ? 'bg-[#1FC16B]' : 'bg-[#171717] dark:bg-[#E5E5E5]'"
               :style="{ width: `${progressPercent}%` }"
             />
           </div>
@@ -478,13 +478,13 @@ onMounted(() => loadTask(taskId.value))
           >
             <span
               class="block text-[14px] font-semibold leading-[20px]"
-              :class="selectedBuildingIndex === idx ? 'text-white' : 'text-[#171717]'"
+              :class="selectedBuildingIndex === idx ? 'text-white dark:text-[#171717]' : 'text-[#171717] dark:text-[#E5E5E5]'"
             >
               {{ b.name }}
             </span>
             <span
               class="mt-0.5 block text-[12px] tabular-nums leading-[16px]"
-              :class="selectedBuildingIndex === idx ? 'text-white/80' : 'text-[#5C5C5C]'"
+              :class="selectedBuildingIndex === idx ? 'text-white/80 dark:text-[#171717]/80' : 'text-[#5C5C5C] dark:text-[#A3A3A3]'"
             >
               {{ buildingStats(b).done }}/{{ buildingStats(b).total }} 已检查
             </span>
@@ -492,7 +492,7 @@ onMounted(() => loadTask(taskId.value))
       </div>
 
       <!-- Section Title: font_2:1777 = 16px Bold, paint_2:1736 = #171717 -->
-      <h2 v-if="task" class="text-[16px] font-bold leading-[24px] text-[#171717]">
+      <h2 v-if="task" class="text-[16px] font-bold leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
         {{ currentBuilding ? `${currentBuilding.name} · 巡检项目` : '巡检项目' }}
       </h2>
 
@@ -501,18 +501,18 @@ onMounted(() => loadTask(taskId.value))
         <div
           v-for="cat in currentBuilding.categories"
           :key="cat.id"
-          class="card-shadow overflow-hidden rounded-xl bg-white"
+          class="card-shadow overflow-hidden rounded-xl bg-white dark:bg-[#262626]"
         >
           <!-- Category Header -->
           <button
             type="button"
-            class="flex w-full px-4 text-left transition-colors active:bg-black/[0.02]"
+            class="flex w-full px-4 text-left transition-colors active:bg-black/[0.02] dark:active:bg-white/[0.04]"
             :class="expandedCategoryIds.includes(cat.id) ? 'flex-col pt-4 pb-4' : 'h-[56px] items-center'"
             @click="toggleCategory(cat)"
           >
             <div class="flex w-full items-center gap-2">
-              <span class="text-[16px] font-medium leading-[24px] text-[#171717]">{{ cat.name }}</span>
-              <span class="min-w-0 flex-1 text-[13px] leading-[20px] text-[#5C5C5C]">
+              <span class="text-[16px] font-medium leading-[24px] text-[#171717] dark:text-[#E5E5E5]">{{ cat.name }}</span>
+              <span class="min-w-0 flex-1 text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
                 {{ categoryStats(cat).done }}/{{ categoryStats(cat).total }} 已检查
               </span>
               <i
@@ -522,7 +522,7 @@ onMounted(() => loadTask(taskId.value))
             </div>
             <p
               v-if="expandedCategoryIds.includes(cat.id) && cat.description"
-              class="mt-1 text-[13px] leading-[20px] text-[#5C5C5C]"
+              class="mt-1 text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]"
             >
               {{ cat.description }}
             </p>
@@ -537,7 +537,7 @@ onMounted(() => loadTask(taskId.value))
             @after-leave="onExpandAfterLeave"
           >
             <div v-if="expandedCategoryIds.includes(cat.id)">
-              <div class="mx-4 h-px bg-[rgba(0,0,0,0.1)]" />
+              <div class="mx-4 h-px bg-[rgba(0,0,0,0.1)] dark:bg-white/10" />
 
               <div
                 v-for="(item, idx) in cat.items"
@@ -547,7 +547,7 @@ onMounted(() => loadTask(taskId.value))
                 <div v-if="idx > 0" class="segment-divider" />
                 <button
                   type="button"
-                  class="flex h-[54px] w-full items-center gap-2 text-left transition-colors active:bg-black/[0.02]"
+                  class="flex h-[54px] w-full items-center gap-2 text-left transition-colors active:bg-black/[0.02] dark:active:bg-white/[0.04]"
                   :data-unchecked-item="item.status === 'unchecked' && item.id === firstUncheckedItemId ? '' : undefined"
                   @click="openSheet(item)"
                 >
@@ -558,11 +558,11 @@ onMounted(() => loadTask(taskId.value))
                     />
                     <div
                       v-else
-                      class="h-[18px] w-[18px] rounded-full border-2 border-[#D4D4D4]"
+                      class="h-[18px] w-[18px] rounded-full border-2 border-[#D4D4D4] dark:border-[#525252]"
                     />
                   </div>
 
-                  <span class="min-w-0 flex-1 truncate text-[14px] leading-[20px] text-[#171717]">
+                  <span class="min-w-0 flex-1 truncate text-[14px] leading-[20px] text-[#171717] dark:text-[#E5E5E5]">
                     {{ item.name }}
                   </span>
 
@@ -595,7 +595,7 @@ onMounted(() => loadTask(taskId.value))
     <!-- 底部操作栏：按任务状态展示不同按钮 -->
     <div
       v-if="task && bottomActions.length"
-      class="bottom-actions shrink-0 border-t border-[rgba(0,0,0,0.08)] bg-white p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]"
+      class="bottom-actions shrink-0 border-t border-[rgba(0,0,0,0.08)] dark:border-white/10 bg-white dark:bg-[#262626] p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]"
     >
       <div class="flex gap-2">
         <button
@@ -604,8 +604,8 @@ onMounted(() => loadTask(taskId.value))
           type="button"
           class="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg text-[14px] font-medium leading-[20px] transition-colors active:opacity-90"
           :class="action.primary
-            ? 'bg-[#171717] text-white'
-            : 'bg-[rgba(0,0,0,0.06)] text-[#5C5C5C]'"
+            ? 'bg-[#171717] dark:bg-[#E5E5E5] text-white dark:text-[#171717]'
+            : 'bg-[rgba(0,0,0,0.06)] dark:bg-white/10 text-[#5C5C5C] dark:text-[#A3A3A3]'"
           :disabled="action.key === 'call' && !task.phone"
           @click="handleBottomAction(action.key)"
         >
@@ -641,11 +641,20 @@ onMounted(() => loadTask(taskId.value))
 .building-tab--active {
   background: linear-gradient(145deg, #171717 0%, #2d2d2d 100%);
 }
+.dark .building-tab--active {
+  background: linear-gradient(145deg, #E5E5E5 0%, #D4D4D4 100%);
+}
 .building-tab--inactive {
   background: #F5F5F5;
 }
+.dark .building-tab--inactive {
+  background: #404040;
+}
 .building-tab--inactive:active {
   background: #EBEBEB;
+}
+.dark .building-tab--inactive:active {
+  background: #525252;
 }
 
 .segment-divider {

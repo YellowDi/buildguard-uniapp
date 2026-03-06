@@ -58,7 +58,7 @@ function onBackdropClick() {
     <Transition name="sheet">
       <div
         v-if="visible"
-        class="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[430px] flex-col rounded-t-2xl bg-white"
+        class="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[430px] flex-col rounded-t-2xl bg-white dark:bg-[#262626]"
         style="max-height: 85vh"
         role="dialog"
         aria-modal="true"
@@ -66,27 +66,27 @@ function onBackdropClick() {
       >
         <!-- Handle bar -->
         <div class="flex justify-center pt-2 pb-1">
-          <div class="h-1 w-9 rounded-full bg-[#D4D4D4]" />
+          <div class="h-1 w-9 rounded-full bg-[#D4D4D4] dark:bg-[#525252]" />
         </div>
 
         <!-- Header -->
-        <div class="flex shrink-0 items-center justify-between border-b border-[#EBEBEB] px-4 pb-3">
-          <h2 class="text-[17px] font-semibold leading-[22px] text-[#171717]">
+        <div class="flex shrink-0 items-center justify-between border-b border-[#EBEBEB] dark:border-white/10 px-4 pb-3">
+          <h2 class="text-[17px] font-semibold leading-[22px] text-[#171717] dark:text-[#E5E5E5]">
             未来计划巡检任务
           </h2>
           <button
             type="button"
-            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5F5] transition-colors active:bg-[#E5E5E5]"
+            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5F5] dark:bg-[#404040] transition-colors active:bg-[#E5E5E5] dark:active:bg-[#525252]"
             aria-label="关闭"
             @click="emit('close')"
           >
-            <i class="ri-close-line text-[16px] leading-[16px] text-[#5C5C5C]" />
+            <i class="ri-close-line text-[16px] leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]" />
           </button>
         </div>
 
         <!-- Scrollable body -->
         <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-            <div v-if="sortedTasks.length === 0" class="py-8 text-center text-[14px] text-[#5C5C5C]">
+            <div v-if="sortedTasks.length === 0" class="py-8 text-center text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">
               暂无计划任务
             </div>
             <div v-else class="timeline">
@@ -98,13 +98,13 @@ function onBackdropClick() {
                 <div class="timeline-track flex shrink-0 flex-col items-center">
                   <div class="flex h-[16px] items-center justify-center">
                     <div
-                      class="timeline-dot h-3 w-3 shrink-0 rounded-full border-2 border-[#262626] bg-white"
-                      :class="task.status === 'active' ? 'border-[#262626] bg-[#262626]' : 'border-[#BFBFBF]'"
+                      class="timeline-dot h-3 w-3 shrink-0 rounded-full border-2 border-[#262626] dark:border-[#E5E5E5] bg-white dark:bg-[#262626]"
+                      :class="task.status === 'active' ? 'border-[#262626] dark:border-[#E5E5E5] bg-[#262626] dark:bg-[#E5E5E5]' : 'border-[#BFBFBF] dark:border-[#737373]'"
                     />
                   </div>
                   <div
                     v-if="index < sortedTasks.length - 1"
-                    class="timeline-line mt-0.5 h-full min-h-[24px] w-px shrink-0 bg-[#E5E5E5]"
+                    class="timeline-line mt-0.5 h-full min-h-[24px] w-px shrink-0 bg-[#E5E5E5] dark:bg-white/20"
                   />
                 </div>
                 <button
@@ -112,29 +112,29 @@ function onBackdropClick() {
                   class="timeline-content flex min-w-0 flex-1 flex-col gap-1 pb-5 text-left transition-colors active:opacity-80"
                   @click="goToTask(task.id)"
                 >
-                  <span class="text-[12px] font-medium leading-[16px] text-[#5C5C5C]">
+                  <span class="text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">
                     {{ formatPlanDate(task) }}
                   </span>
                   <div class="flex items-center gap-2">
-                    <span class="min-w-0 flex-1 text-[15px] font-medium leading-[22px] text-[#171717]">
+                    <span class="min-w-0 flex-1 text-[15px] font-medium leading-[22px] text-[#171717] dark:text-[#E5E5E5]">
                       {{ task.parkName }}
                     </span>
                     <div
                       v-if="task.status === 'active'"
-                      class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] bg-white px-1 py-1"
+                      class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] dark:border-white/10 bg-white dark:bg-[#404040] px-1 py-1"
                     >
-                      <i class="ri-loader-2-line text-[16px] leading-[16px] text-[#171717]" />
-                      <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C]">进行中</span>
+                      <i class="ri-loader-2-line text-[16px] leading-[16px] text-[#171717] dark:text-[#E5E5E5]" />
+                      <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">进行中</span>
                     </div>
                     <div
                       v-else
-                      class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] bg-white px-1 py-1"
+                      class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] dark:border-white/10 bg-white dark:bg-[#404040] px-1 py-1"
                     >
                       <i class="ri-time-fill text-[16px] leading-[16px] text-[#FA7319]" />
-                      <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C]">待完成</span>
+                      <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">待完成</span>
                     </div>
                   </div>
-                  <span class="text-[13px] leading-[20px] text-[#5C5C5C]">
+                  <span class="text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
                     {{ task.taskName }}
                   </span>
                 </button>
