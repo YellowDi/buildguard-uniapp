@@ -5,6 +5,7 @@ import type { TaskDetail, Building, InspectionCategory, CheckItem, CheckItemStat
 import { fetchTaskDetail } from '../../api/task'
 import InspectionSheet from './InspectionSheet.vue'
 import SubmitConfirmDrawer from './SubmitConfirmDrawer.vue'
+import TaskReportDrawer from './TaskReportDrawer.vue'
 
 const route = useRoute()
 
@@ -13,6 +14,7 @@ const expandedCategoryIds = ref<number[]>([])
 const sheetVisible = ref(false)
 const activeItem = ref<CheckItem | null>(null)
 const submitConfirmVisible = ref(false)
+const reportDrawerVisible = ref(false)
 /** 当前选中的建筑索引（多建筑时用于切换） */
 const selectedBuildingIndex = ref(0)
 
@@ -176,11 +178,11 @@ const bottomActions = computed((): BottomAction[] => {
         { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
       ]
     case 'active':
-      // 进行中：全部完成时显示「提交」，否则电话联系（左窄）+ 继续巡检（右撑满）
+      // 进行中：电话联系（左窄）+ 主操作（右撑满）。全部完成时为「提交」，否则「继续巡检」
       if (progressPercent.value === 100) {
         return [
-          { key: 'submit', label: '提交', primary: true, icon: 'ri-check-double-line' },
           { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+          { key: 'submit', label: '提交', primary: true, icon: 'ri-check-double-line', fillRemaining: true },
         ]
       }
       return [
@@ -291,10 +293,9 @@ function onContinue() {
   firstUnchecked?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
-/** 底部操作：查看报告（占位，后续可跳转报告页） */
+/** 底部操作：查看报告，打开巡检结果概览浮窗 */
 function onReport() {
-  // TODO: 跳转至报告页 router.push({ name: 'TaskReport', params: { id: taskId } })
-  console.log('查看报告', taskId.value)
+  reportDrawerVisible.value = true
 }
 
 /** 结果确认浮窗：确认提交，将任务标记为已完成 */
@@ -656,6 +657,12 @@ onMounted(() => loadTask(taskId.value))
       :task="task"
       @close="submitConfirmVisible = false"
       @confirm="onSubmitConfirm"
+    />
+
+    <TaskReportDrawer
+      :visible="reportDrawerVisible"
+      :task="task"
+      @close="reportDrawerVisible = false"
     />
   </section>
 </template>

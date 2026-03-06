@@ -89,31 +89,6 @@
       {
         "id": 1,
         "name": "1号仓库",
-        "categoryIds": [201, 202],
-        "itemResults": {
-          "2001": { "status": "unchecked" },
-          "2002": { "status": "unchecked" },
-          "2003": { "status": "unchecked" },
-          "2004": { "status": "unchecked" },
-          "2005": { "status": "unchecked" },
-          "2006": { "status": "unchecked" },
-          "2007": { "status": "unchecked" },
-          "2008": { "status": "unchecked" }
-        }
-      },
-      {
-        "id": 2,
-        "name": "2号仓库",
-        "categoryIds": [203],
-        "itemResults": {
-          "2009": { "status": "unchecked" },
-          "2010": { "status": "unchecked" },
-          "2011": { "status": "unchecked" }
-        }
-      },
-      {
-        "id": 3,
-        "name": "综合楼",
         "categoryIds": [204],
         "itemResults": {
           "2012": { "status": "unchecked" },
