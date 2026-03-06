@@ -6,6 +6,7 @@ import { fetchTaskDetail } from '../../api/task'
 import InspectionSheet from './InspectionSheet.vue'
 import SubmitConfirmDrawer from './SubmitConfirmDrawer.vue'
 import TaskReportDrawer from './TaskReportDrawer.vue'
+import InspectionItemDetailDrawer, { type DetailEntry } from './InspectionItemDetailDrawer.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +20,8 @@ const sheetVisible = ref(false)
 const activeItem = ref<CheckItem | null>(null)
 const submitConfirmVisible = ref(false)
 const reportDrawerVisible = ref(false)
+const detailVisible = ref(false)
+const detailEntry = ref<DetailEntry | null>(null)
 /** 当前选中的建筑索引（多建筑时用于切换） */
 const selectedBuildingIndex = ref(0)
 
@@ -288,8 +291,31 @@ function openSheet(item: CheckItem) {
   sheetVisible.value = true
 }
 
+function openItemDetail(cat: InspectionCategory, item: CheckItem) {
+  const buildingName = currentBuilding.value?.name ?? '园区整体'
+  detailEntry.value = {
+    buildingName,
+    categoryName: cat.name,
+    item,
+  }
+  detailVisible.value = true
+}
+
 function closeSheet() {
   sheetVisible.value = false
+}
+
+function closeItemDetail() {
+  detailVisible.value = false
+  detailEntry.value = null
+}
+
+function handleItemClick(cat: InspectionCategory, item: CheckItem) {
+  if (task.value?.status === 'completed') {
+    openItemDetail(cat, item)
+    return
+  }
+  openSheet(item)
 }
 
 function selectBuilding(index: number) {
@@ -673,7 +699,7 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
                   type="button"
                   class="flex h-[54px] w-full items-center gap-2 text-left transition-colors active:bg-black/[0.02] dark:active:bg-white/[0.04]"
                   :data-unchecked-item="item.status === 'unchecked' && item.id === firstUncheckedItemId ? '' : undefined"
-                  @click="openSheet(item)"
+                  @click="handleItemClick(cat, item)"
                 >
                   <div class="flex h-5 w-5 shrink-0 items-center justify-center">
                     <i
@@ -753,6 +779,12 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
       :visible="reportDrawerVisible"
       :task="task"
       @close="reportDrawerVisible = false"
+    />
+
+    <InspectionItemDetailDrawer
+      :visible="detailVisible"
+      :entry="detailEntry"
+      @close="closeItemDetail"
     />
   </section>
 </template>
