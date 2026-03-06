@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
 import type { CheckItem, CheckItemStatus } from '../../types/task'
+import { useBodyScrollLock } from '../../composables/useBodyScrollLock'
 
 const props = defineProps<{
   visible: boolean
@@ -16,38 +17,34 @@ const selectedStatus = ref<CheckItemStatus>('unchecked')
 const photos = ref<string[]>([])
 const description = ref('')
 const impact = ref('')
+const uploadedFileByUrl = new Map<string, File>()
+const { lock, unlock } = useBodyScrollLock()
 
-let savedScrollY = 0
-
-function lockBodyScroll() {
-  savedScrollY = window.scrollY
-  document.documentElement.style.overflow = 'hidden'
-  document.documentElement.style.touchAction = 'none'
-  document.body.style.overflow = 'hidden'
-  document.body.style.touchAction = 'none'
-  document.body.style.position = 'fixed'
-  document.body.style.top = `-${savedScrollY}px`
-  document.body.style.left = '0'
-  document.body.style.right = '0'
-  document.body.style.width = '100%'
+function revokeUploadedPhoto(url: string) {
+  if (!uploadedFileByUrl.has(url)) return
+  URL.revokeObjectURL(url)
+  uploadedFileByUrl.delete(url)
 }
 
-function unlockBodyScroll() {
-  document.documentElement.style.overflow = ''
-  document.documentElement.style.touchAction = ''
-  document.body.style.overflow = ''
-  document.body.style.touchAction = ''
-  document.body.style.position = ''
-  document.body.style.top = ''
-  document.body.style.left = ''
-  document.body.style.right = ''
-  document.body.style.width = ''
-  window.scrollTo(0, savedScrollY)
+function clearUploadedPhotos() {
+  for (const url of uploadedFileByUrl.keys()) {
+    URL.revokeObjectURL(url)
+  }
+  uploadedFileByUrl.clear()
+}
+
+function resetDraft() {
+  clearUploadedPhotos()
+  selectedStatus.value = 'unchecked'
+  photos.value = []
+  description.value = ''
+  impact.value = ''
 }
 
 watch(() => props.visible, (val) => {
   if (val) {
-    lockBodyScroll()
+    lock()
+    resetDraft()
     if (props.item) {
       selectedStatus.value = props.item.status
       photos.value = props.item.photos ? [...props.item.photos] : []
@@ -55,12 +52,13 @@ watch(() => props.visible, (val) => {
       impact.value = props.item.impact ?? ''
     }
   } else {
-    unlockBodyScroll()
+    unlock()
+    resetDraft()
   }
-})
+}, { immediate: true })
 
 onBeforeUnmount(() => {
-  if (props.visible) unlockBodyScroll()
+  clearUploadedPhotos()
 })
 
 function triggerUpload() {
@@ -72,6 +70,7 @@ function triggerUpload() {
     if (!input.files) return
     for (const file of Array.from(input.files)) {
       const url = URL.createObjectURL(file)
+      uploadedFileByUrl.set(url, file)
       photos.value.push(url)
     }
   }
@@ -79,16 +78,39 @@ function triggerUpload() {
 }
 
 function removePhoto(idx: number) {
-  photos.value.splice(idx, 1)
+  const [removed] = photos.value.splice(idx, 1)
+  if (removed) revokeUploadedPhoto(removed)
 }
 
-function handleSave() {
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result ?? ''))
+    reader.onerror = () => resolve('')
+    reader.readAsDataURL(file)
+  })
+}
+
+async function serializePhotosForSave() {
+  const serialized = await Promise.all(
+    photos.value.map(async (photo) => {
+      const file = uploadedFileByUrl.get(photo)
+      if (!file) return photo
+      return fileToDataUrl(file)
+    }),
+  )
+  return serialized.filter(Boolean)
+}
+
+async function handleSave() {
+  const serializedPhotos = await serializePhotosForSave()
   emit('save', {
     status: selectedStatus.value,
-    photos: [...photos.value],
+    photos: serializedPhotos,
     description: description.value,
     impact: impact.value,
   })
+  resetDraft()
 }
 </script>
 

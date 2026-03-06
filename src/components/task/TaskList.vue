@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onBeforeUnmount } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import type { TaskSection } from '../../types/task'
 import { fetchTaskList } from '../../api/task'
 import UserCard from '../user/UserCard.vue'
 import PlannedTaskDrawer from './PlannedTaskDrawer.vue'
 
-const route = useRoute()
 const router = useRouter()
 
 const sections = ref<TaskSection[]>([])
+const loading = ref(true)
+const errorMessage = ref('')
 
 const activeSection = computed(() => sections.value.find(s => s.key === 'active'))
 const pendingSection = computed(() => sections.value.find(s => s.key === 'pending'))
@@ -68,30 +69,53 @@ function onClickOutside(e: MouseEvent) {
 let observer: IntersectionObserver | null = null
 let archiveObserver: IntersectionObserver | null = null
 
-onMounted(async () => {
-  const data = await fetchTaskList()
-  sections.value = data.sections
+function setupObservers() {
+  observer?.disconnect()
+  archiveObserver?.disconnect()
+  observer = null
+  archiveObserver = null
+  isStuck.value = false
+  archivedInView.value = false
 
-  document.addEventListener('click', onClickOutside, true)
+  if (!sentinel.value || !scrollEl.value) return
+  observer = new IntersectionObserver(
+    ([entry]) => { isStuck.value = !entry.isIntersecting },
+    { root: scrollEl.value, threshold: 0 },
+  )
+  observer.observe(sentinel.value)
 
+  if (!archiveSentinel.value) return
+  archiveObserver = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) archivedInView.value = true
+    },
+    { root: scrollEl.value, rootMargin: '100px 0px', threshold: 0 },
+  )
+  archiveObserver.observe(archiveSentinel.value)
+}
+
+async function loadTaskList() {
+  loading.value = true
+  errorMessage.value = ''
+  selectedPark.value = null
+  showParkFilter.value = false
+
+  try {
+    const data = await fetchTaskList()
+    sections.value = data.sections
+  } catch {
+    sections.value = []
+    errorMessage.value = '任务列表加载失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
   await nextTick()
-  if (sentinel.value && scrollEl.value) {
-    observer = new IntersectionObserver(
-      ([entry]) => { isStuck.value = !entry.isIntersecting },
-      { root: scrollEl.value, threshold: 0 }
-    )
-    observer.observe(sentinel.value)
-  }
-  // 归档区域懒加载：进入视口后再渲染列表，减轻首屏 DOM
-  if (archiveSentinel.value && scrollEl.value) {
-    archiveObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) archivedInView.value = true
-      },
-      { root: scrollEl.value, rootMargin: '100px 0px', threshold: 0 }
-    )
-    archiveObserver.observe(archiveSentinel.value)
-  }
+  setupObservers()
+}
+
+onMounted(async () => {
+  document.addEventListener('click', onClickOutside, true)
+  await loadTaskList()
 })
 
 onBeforeUnmount(() => {
@@ -121,6 +145,29 @@ onBeforeUnmount(() => {
         <UserCard name="黄某某" :completed-count="completedCount" />
       </div>
 
+      <div v-if="loading" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
+        <i class="ri-loader-4-line animate-spin text-[30px] text-[#A3A3A3]" />
+        <p class="mt-2 text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">正在加载任务列表…</p>
+      </div>
+
+      <div v-else-if="errorMessage" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
+        <i class="ri-error-warning-line text-[30px] text-[#E5484D]" />
+        <p class="mt-2 text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">{{ errorMessage }}</p>
+        <button
+          type="button"
+          class="mt-4 rounded-lg bg-[#171717] px-4 py-2 text-[14px] font-medium text-white transition-colors active:bg-[#333333] dark:bg-[#E5E5E5] dark:text-[#171717] dark:active:bg-[#D4D4D4]"
+          @click="loadTaskList"
+        >
+          重试
+        </button>
+      </div>
+
+      <div v-else-if="sections.length === 0" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
+        <i class="ri-inbox-line text-[30px] text-[#A3A3A3]" />
+        <p class="mt-2 text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">暂无任务数据</p>
+      </div>
+
+      <template v-else>
       <!-- Combined Active + Pending Card -->
       <div class="flex flex-col items-center px-4 pb-4 pt-0">
         <div class="card-shadow w-full overflow-hidden rounded-xl bg-white dark:bg-[#262626]">
@@ -322,6 +369,7 @@ onBeforeUnmount(() => {
           </template>
         </div>
       </div>
+      </template>
 
     </div>
 

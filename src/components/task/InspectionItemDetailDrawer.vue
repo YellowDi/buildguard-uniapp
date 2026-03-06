@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { watch, onBeforeUnmount } from 'vue'
+import { watch } from 'vue'
 import type { CheckItem } from '../../types/task'
+import { useBodyScrollLock } from '../../composables/useBodyScrollLock'
 
 export type DetailEntry = {
   buildingName: string
@@ -17,42 +18,12 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-let savedScrollY = 0
-
-function lockBodyScroll() {
-  savedScrollY = window.scrollY
-  document.documentElement.style.overflow = 'hidden'
-  document.documentElement.style.touchAction = 'none'
-  document.body.style.overflow = 'hidden'
-  document.body.style.touchAction = 'none'
-  document.body.style.position = 'fixed'
-  document.body.style.top = `-${savedScrollY}px`
-  document.body.style.left = '0'
-  document.body.style.right = '0'
-  document.body.style.width = '100%'
-}
-
-function unlockBodyScroll() {
-  document.documentElement.style.overflow = ''
-  document.documentElement.style.touchAction = ''
-  document.body.style.overflow = ''
-  document.body.style.touchAction = ''
-  document.body.style.position = ''
-  document.body.style.top = ''
-  document.body.style.left = ''
-  document.body.style.right = ''
-  document.body.style.width = ''
-  window.scrollTo(0, savedScrollY)
-}
+const { lock, unlock } = useBodyScrollLock()
 
 watch(() => props.visible, (val) => {
-  if (val) lockBodyScroll()
-  else unlockBodyScroll()
-})
-
-onBeforeUnmount(() => {
-  if (props.visible) unlockBodyScroll()
-})
+  if (val) lock()
+  else unlock()
+}, { immediate: true })
 
 function itemResultLabel(status: string) {
   switch (status) {

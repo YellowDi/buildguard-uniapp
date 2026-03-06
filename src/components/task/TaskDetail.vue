@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import type { TaskDetail, Building, InspectionCategory, CheckItem, CheckItemStatus } from '../../types/task'
 import { fetchTaskDetail } from '../../api/task'
 import InspectionSheet from './InspectionSheet.vue'
@@ -8,8 +8,12 @@ import SubmitConfirmDrawer from './SubmitConfirmDrawer.vue'
 import TaskReportDrawer from './TaskReportDrawer.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const task = ref<TaskDetail | null>(null)
+const loading = ref(true)
+const errorMessage = ref('')
+const notFound = ref(false)
 const expandedCategoryIds = ref<number[]>([])
 const sheetVisible = ref(false)
 const activeItem = ref<CheckItem | null>(null)
@@ -441,23 +445,84 @@ watch(
 )
 
 async function loadTask(id: number) {
-  task.value = await fetchTaskDetail(id)
-  selectedBuildingIndex.value = 0
-  expandedCategoryIds.value = []
+  loading.value = true
+  errorMessage.value = ''
+  notFound.value = false
+  task.value = null
+
+  if (!Number.isFinite(id) || id <= 0) {
+    notFound.value = true
+    loading.value = false
+    return
+  }
+
+  try {
+    const data = await fetchTaskDetail(id)
+    if (!data) {
+      notFound.value = true
+      return
+    }
+    task.value = data
+    selectedBuildingIndex.value = 0
+    expandedCategoryIds.value = []
+  } catch {
+    errorMessage.value = '任务加载失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
 }
 
-watch(taskId, (id) => { loadTask(id) }, { immediate: false })
+function retryLoad() {
+  loadTask(taskId.value)
+}
 
-onMounted(() => loadTask(taskId.value))
+watch(taskId, (id) => { loadTask(id) }, { immediate: true })
 </script>
 
 <template>
   <section class="mx-auto flex h-screen w-full max-w-[430px] flex-col bg-[#EBEBEB] dark:bg-[#171717]">
     <!-- Scrollable Content -->
     <div class="flex flex-1 flex-col overflow-y-auto px-4">
+      <template v-if="loading">
+        <div class="flex flex-1 items-center justify-center">
+          <div class="flex flex-col items-center gap-2">
+            <i class="ri-loader-4-line animate-spin text-[32px] text-[#A3A3A3]" />
+            <span class="text-[14px] text-[#A3A3A3]">加载中…</span>
+          </div>
+        </div>
+      </template>
 
+      <template v-else-if="errorMessage">
+        <div class="flex flex-1 flex-col items-center justify-center gap-3 py-10">
+          <i class="ri-error-warning-line text-[32px] text-[#E5484D]" />
+          <p class="text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">{{ errorMessage }}</p>
+          <button
+            type="button"
+            class="rounded-lg bg-[#171717] px-4 py-2 text-[14px] font-medium text-white transition-colors active:bg-[#333333] dark:bg-[#E5E5E5] dark:text-[#171717] dark:active:bg-[#D4D4D4]"
+            @click="retryLoad"
+          >
+            重试
+          </button>
+        </div>
+      </template>
+
+      <template v-else-if="notFound">
+        <div class="flex flex-1 flex-col items-center justify-center gap-3 py-10">
+          <i class="ri-file-search-line text-[32px] text-[#A3A3A3]" />
+          <p class="text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">任务不存在或已被删除</p>
+          <button
+            type="button"
+            class="rounded-lg bg-[#171717] px-4 py-2 text-[14px] font-medium text-white transition-colors active:bg-[#333333] dark:bg-[#E5E5E5] dark:text-[#171717] dark:active:bg-[#D4D4D4]"
+            @click="router.replace('/')"
+          >
+            返回任务列表
+          </button>
+        </div>
+      </template>
+
+      <template v-else-if="task">
       <!-- Task Info Card -->
-      <div v-if="task" class="card-shadow mt-4 flex flex-col rounded-xl bg-white dark:bg-[#262626] p-4">
+      <div class="card-shadow mt-4 flex flex-col rounded-xl bg-white dark:bg-[#262626] p-4">
         <!-- Title Row -->
         <div class="flex items-start">
           <div class="flex min-w-0 flex-1 flex-col">
@@ -521,10 +586,10 @@ onMounted(() => loadTask(taskId.value))
       </div>
 
       <!-- Segment Divider -->
-      <div v-if="task" class="segment-divider my-4 shrink-0" />
+      <div class="segment-divider my-4 shrink-0" />
       
       <!-- Building Switcher（多建筑时显示） -->
-      <div v-if="task && buildingsList.length > 1" class="mb-4 grid grid-cols-3 gap-2.5">
+      <div v-if="buildingsList.length > 1" class="mb-4 grid grid-cols-3 gap-2.5">
           <button
             v-for="(b, idx) in buildingsList"
             :key="b.id"
@@ -551,12 +616,12 @@ onMounted(() => loadTask(taskId.value))
       </div>
 
       <!-- Section Title: font_2:1777 = 16px Bold, paint_2:1736 = #171717 -->
-      <h2 v-if="task" class="text-[16px] font-bold leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
+      <h2 class="text-[16px] font-bold leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
         {{ currentBuilding ? `${currentBuilding.name} · 巡检项目` : '巡检项目' }}
       </h2>
 
       <!-- Inspection Category Accordions（当前建筑） -->
-      <div v-if="task && currentBuilding" class="mt-4 flex flex-col gap-4 pb-8">
+      <div v-if="currentBuilding" class="mt-4 flex flex-col gap-4 pb-8">
         <div
           v-for="cat in currentBuilding.categories"
           :key="cat.id"
@@ -640,14 +705,7 @@ onMounted(() => loadTask(taskId.value))
           </Transition>
         </div>
       </div>
-
-      <!-- Loading State -->
-      <div v-if="!task" class="flex flex-1 items-center justify-center">
-        <div class="flex flex-col items-center gap-2">
-          <i class="ri-loader-4-line animate-spin text-[32px] text-[#A3A3A3]" />
-          <span class="text-[14px] text-[#A3A3A3]">加载中…</span>
-        </div>
-      </div>
+      </template>
 
     </div>
 
