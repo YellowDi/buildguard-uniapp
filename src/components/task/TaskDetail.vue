@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import type { TaskDetail, Building, InspectionCategory, CheckItem, CheckItemStatus } from '../../types/task'
 import { fetchTaskDetail } from '../../api/task'
 import InspectionSheet from './InspectionSheet.vue'
+import SubmitConfirmDrawer from './SubmitConfirmDrawer.vue'
 
 const route = useRoute()
 
@@ -11,6 +12,7 @@ const task = ref<TaskDetail | null>(null)
 const expandedCategoryIds = ref<number[]>([])
 const sheetVisible = ref(false)
 const activeItem = ref<CheckItem | null>(null)
+const submitConfirmVisible = ref(false)
 /** 当前选中的建筑索引（多建筑时用于切换） */
 const selectedBuildingIndex = ref(0)
 
@@ -174,7 +176,13 @@ const bottomActions = computed((): BottomAction[] => {
         { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
       ]
     case 'active':
-      // 进行中：继续巡检、电话联系
+      // 进行中：全部完成时显示「提交」，否则「继续巡检」、电话联系
+      if (progressPercent.value === 100) {
+        return [
+          { key: 'submit', label: '提交', primary: true, icon: 'ri-check-double-line' },
+          { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        ]
+      }
       return [
         { key: 'continue', label: '继续巡检', primary: true, icon: 'ri-play-circle-line' },
         { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
@@ -284,6 +292,16 @@ function onReport() {
   console.log('查看报告', taskId.value)
 }
 
+/** 结果确认浮窗：确认提交，将任务标记为已完成 */
+function onSubmitConfirm() {
+  if (task.value) {
+    task.value.status = 'completed'
+    task.value.completedAt = new Date().toISOString().slice(0, 10)
+    submitConfirmVisible.value = false
+    // TODO: 调用提交接口
+  }
+}
+
 /** 底部操作：开始巡检（待完成状态下将任务设为进行中） */
 function onStartInspection() {
   if (task.value?.status !== 'pending') return
@@ -304,6 +322,9 @@ function handleBottomAction(key: string) {
       break
     case 'continue':
       onContinue()
+      break
+    case 'submit':
+      submitConfirmVisible.value = true
       break
     case 'report':
       onReport()
@@ -620,6 +641,13 @@ onMounted(() => loadTask(taskId.value))
       :item="activeItem"
       @close="closeSheet"
       @save="onSheetSave"
+    />
+
+    <SubmitConfirmDrawer
+      :visible="submitConfirmVisible"
+      :task="task"
+      @close="submitConfirmVisible = false"
+      @confirm="onSubmitConfirm"
     />
   </section>
 </template>
