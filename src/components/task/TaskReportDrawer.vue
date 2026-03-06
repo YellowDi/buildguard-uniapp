@@ -78,15 +78,6 @@ function itemStatusIcon(status: string) {
   }
 }
 
-function statusBgColor(status: string) {
-  switch (status) {
-    case 'normal': return 'bg-[#F0FDF4] dark:bg-[#1FC16B]/15'
-    case 'focus': return 'bg-[#FFF7ED] dark:bg-[#FA7319]/15'
-    case 'risk': return 'bg-[#FEF2F2] dark:bg-[#E5484D]/15'
-    default: return 'bg-[#F5F5F5] dark:bg-white/10'
-  }
-}
-
 /** 归一化建筑列表 */
 const buildingsList = computed((): Building[] => {
   const t = props.task
@@ -120,6 +111,25 @@ const byRiskGroups = computed(() => {
     { key: 'normal' as const, label: '一切正常', count: normal.length, items: normal },
   ]
 })
+
+const nonEmptyRiskGroups = computed(() =>
+  byRiskGroups.value.filter((group) => group.count > 0)
+)
+
+const buildingGroups = computed(() =>
+  buildingsList.value
+    .map((building) => {
+      const categories = building.categories
+        .map((cat) => ({
+          ...cat,
+          items: cat.items.filter((item) => item.status !== 'unchecked'),
+        }))
+        .filter((cat) => cat.items.length > 0)
+      const total = categories.reduce((sum, cat) => sum + cat.items.length, 0)
+      return { ...building, categories, total }
+    })
+    .filter((building) => building.total > 0)
+)
 
 function formatCompletedAt(completedAt: string | undefined): string {
   if (!completedAt) return ''
@@ -208,7 +218,7 @@ const headerSubtext = computed(() => {
           <!-- 按建筑 -->
           <div v-if="viewMode === 'building'" class="flex flex-col gap-4">
             <div
-              v-for="b in buildingsList"
+              v-for="b in buildingGroups"
               :key="b.id"
               class="rounded-xl border border-[#EBEBEB] dark:border-white/10 bg-[#F5F5F5] dark:bg-[#404040]/70 px-1 pb-1"
             >
@@ -217,9 +227,7 @@ const headerSubtext = computed(() => {
                   {{ b.name }}
                 </span>
                 <span class="text-[12px] font-medium tabular-nums text-[#5C5C5C] dark:text-[#A3A3A3]">
-                  {{
-                    b.categories.reduce((sum, cat) => sum + cat.items.filter((item) => item.status !== 'unchecked').length, 0)
-                  }}/{{ b.categories.reduce((sum, cat) => sum + cat.items.length, 0) }} 项
+                  {{ b.total }} 项
                 </span>
               </div>
               <div class="report-risk-inner overflow-hidden rounded-lg bg-white dark:bg-[#262626]">
@@ -256,12 +264,19 @@ const headerSubtext = computed(() => {
                 </div>
               </div>
             </div>
+
+            <div
+              v-if="buildingGroups.length === 0"
+              class="rounded-xl border border-dashed border-[#D4D4D4] dark:border-[#525252] bg-[#FAFAFA] dark:bg-[#404040]/50 px-3 py-5 text-center text-[13px] text-[#A3A3A3]"
+            >
+              暂无已检查结果
+            </div>
           </div>
 
           <!-- 按风险 -->
           <div v-if="viewMode === 'risk'" class="flex flex-col gap-4">
             <div
-              v-for="group in byRiskGroups"
+              v-for="group in nonEmptyRiskGroups"
               :key="group.key"
               class="rounded-xl border px-1 pb-1"
               :class="[
@@ -303,10 +318,14 @@ const headerSubtext = computed(() => {
                     <i class="ri-arrow-right-s-line shrink-0 text-[18px] leading-[18px] text-[#A3A3A3]" />
                   </div>
                 </li>
-                <li v-if="group.items.length === 0" class="px-3 py-4 text-center text-[13px] text-[#A3A3A3]">
-                  无
-                </li>
               </ul>
+            </div>
+
+            <div
+              v-if="nonEmptyRiskGroups.length === 0"
+              class="rounded-xl border border-dashed border-[#D4D4D4] dark:border-[#525252] bg-[#FAFAFA] dark:bg-[#404040]/50 px-3 py-5 text-center text-[13px] text-[#A3A3A3]"
+            >
+              暂无已检查结果
             </div>
           </div>
         </div>
