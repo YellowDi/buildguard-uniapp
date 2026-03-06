@@ -187,37 +187,41 @@ function formatCompletedAt(completedAt: string | undefined): string {
             <div
               v-for="b in buildingsList"
               :key="b.id"
-              class="rounded-xl border border-[#EBEBEB] dark:border-white/10 overflow-hidden bg-[#FAFAFA] dark:bg-[#404040]/50"
+              class="rounded-xl border border-[#EBEBEB] dark:border-white/10 bg-[#F5F5F5] dark:bg-[#404040]/70 px-1 pb-1"
             >
-              <div class="px-3 py-2.5 text-[15px] font-semibold leading-[22px] text-[#171717] dark:text-[#E5E5E5] border-b border-[#EBEBEB] dark:border-white/10">
-                {{ b.name }}
+              <div class="flex items-center justify-between px-3 py-2.5">
+                <span class="text-[14px] font-semibold leading-[20px] text-[#171717] dark:text-[#E5E5E5]">
+                  {{ b.name }}
+                </span>
+                <span class="text-[12px] font-medium tabular-nums text-[#5C5C5C] dark:text-[#A3A3A3]">
+                  {{
+                    b.categories.reduce((sum, cat) => sum + cat.items.filter((item) => item.status !== 'unchecked').length, 0)
+                  }}/{{ b.categories.reduce((sum, cat) => sum + cat.items.length, 0) }} 项
+                </span>
               </div>
-              <div class="p-2 flex flex-col gap-2">
+              <div class="report-risk-inner overflow-hidden rounded-lg bg-white dark:bg-[#262626]">
                 <div
                   v-for="cat in b.categories"
                   :key="cat.id"
-                  class="rounded-lg bg-white dark:bg-[#262626] p-2.5"
+                  class="px-3 py-2.5"
                 >
-                  <div class="text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3] mb-2">
+                  <div class="mb-1 text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
                     {{ cat.name }}
                   </div>
-                  <ul class="flex flex-col gap-1.5">
+                  <ul class="divide-y divide-[#EBEBEB] dark:divide-white/10">
                     <li
                       v-for="item in cat.items"
                       :key="item.id"
-                      class="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 transition-colors active:bg-black/[0.04] dark:active:bg-white/[0.06]"
-                      :class="item.status !== 'unchecked' ? statusBgColor(item.status) : ''"
+                      class="flex cursor-pointer items-center gap-2 py-2.5 transition-colors active:bg-black/[0.03] dark:active:bg-white/[0.06]"
                       @click="openItemDetail({ building: b, cat, item })"
                     >
                       <i
-                        v-if="item.status !== 'unchecked'"
                         :class="[itemStatusIcon(item.status), 'text-[16px] leading-[16px] shrink-0', itemStatusColor(item.status)]"
                       />
                       <span class="min-w-0 flex-1 text-[14px] leading-[20px] text-[#171717] dark:text-[#E5E5E5]">
                         {{ item.name }}
                       </span>
                       <span
-                        v-if="item.status !== 'unchecked'"
                         class="shrink-0 text-[12px] font-medium"
                         :class="itemStatusColor(item.status)"
                       >
