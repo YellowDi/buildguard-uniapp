@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
           <!-- 情况状态 -->
           <div v-if="entry.item.status !== 'unchecked'" class="mb-4">
             <span class="mb-1.5 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">情况状态</span>
-            <div class="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5E5] dark:border-white/20 bg-[#FAFAFA] dark:bg-[#404040] px-3 py-2">
+            <div class="flex items-center gap-1.5">
               <i :class="[itemStatusIcon(entry.item.status), 'text-[18px]', itemStatusColor(entry.item.status)]" />
               <span class="text-[14px] font-medium" :class="itemStatusColor(entry.item.status)">
                 {{ itemResultLabel(entry.item.status) }}
