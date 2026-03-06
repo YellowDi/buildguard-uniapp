@@ -10,6 +10,11 @@
     background-color: #EBEBEB;
   }
 
+  .dark body {
+    background-color: #171717;
+    @apply text-slate-100;
+  }
+
   #app {
     @apply min-h-screen;
   }

@@ -9,8 +9,6 @@ import PlannedTaskDrawer from './PlannedTaskDrawer.vue'
 const route = useRoute()
 const router = useRouter()
 
-const pageTitle = computed(() => (route.meta?.title as string) || '任务工作台')
-
 const sections = ref<TaskSection[]>([])
 
 const activeSection = computed(() => sections.value.find(s => s.key === 'active'))
@@ -92,21 +90,17 @@ onBeforeUnmount(() => {
   <section
     class="task-section mx-auto flex h-screen w-full max-w-[430px] flex-col"
   >
-    <!-- Navigation Bar -->
-    <div
-      class="task-nav flex items-center px-4 pb-1 pt-3"
-    >
-      <h1 class="text-[24px] font-bold leading-[32px] text-[#171717]">{{ pageTitle }}</h1>
-    </div>
-
     <!-- Scrollable Content -->
     <div ref="scrollEl" class="flex flex-1 flex-col overflow-y-auto pb-4">
 
-      <!-- User Info Card -->
-      <UserCard name="黄某某" :completed-count="completedCount" />
+      <!-- 顶部：左侧 logo 位，右侧用户卡片 -->
+      <div class="flex items-center justify-between px-4 pt-3">
+        <div class="min-w-0 flex-1" />
+        <UserCard name="黄某某" :completed-count="completedCount" />
+      </div>
 
       <!-- Combined Active + Pending Card -->
-      <div class="flex flex-col items-center px-4 pb-4 pt-4">
+      <div class="flex flex-col items-center px-4 pb-4 pt-0">
         <div class="card-shadow w-full overflow-hidden rounded-xl bg-white">
           <!-- Active Tasks -->
           <div
@@ -299,7 +293,6 @@ onBeforeUnmount(() => {
 
 <style>
 .task-section,
-.task-nav,
 .task-sticky {
   background-color: #EBEBEB;
 }
