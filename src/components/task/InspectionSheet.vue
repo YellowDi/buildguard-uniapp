@@ -129,12 +129,12 @@ async function handleSave() {
     <Transition name="sheet">
       <div
         v-if="visible"
-        class="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[430px] flex-col rounded-t-2xl bg-white dark:bg-[#262626]"
+        class="drawer-panel z-50"
         style="max-height: 85vh"
       >
         <!-- Handle bar -->
-        <div class="flex justify-center pt-2 pb-1">
-          <div class="h-1 w-9 rounded-full bg-[#D4D4D4] dark:bg-[#525252]" />
+        <div class="drawer-handle-wrap">
+          <div class="drawer-handle-bar" />
         </div>
 
         <!-- Header -->
@@ -144,10 +144,10 @@ async function handleSave() {
           </h3>
           <button
             type="button"
-            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5F5] dark:bg-[#404040] transition-colors active:bg-[#E5E5E5] dark:active:bg-[#525252]"
+            class="drawer-close-btn"
             @click="emit('close')"
           >
-            <i class="ri-close-line text-[16px] leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]" />
+            <i class="ri-close-line drawer-close-icon" />
           </button>
         </div>
 
@@ -262,59 +262,3 @@ async function handleSave() {
     </Transition>
   </Teleport>
 </template>
-
-<style scoped>
-/* Backdrop: prevent touch scroll from reaching page underneath */
-.sheet-overlay {
-  touch-action: none;
-  overflow: hidden;
-}
-
-/* Backdrop fade */
-.overlay-enter-active {
-  transition: opacity 320ms ease;
-}
-.overlay-leave-active {
-  transition: opacity 180ms ease;
-}
-.overlay-enter-from,
-.overlay-leave-to {
-  opacity: 0;
-}
-
-/* Sheet: slide up from bottom + scale up */
-@keyframes sheet-in {
-  0% {
-    transform: translateY(60%) scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes sheet-out {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(60%) scale(0.8);
-    opacity: 0;
-  }
-}
-
-.sheet-enter-active {
-  animation: sheet-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  transform-origin: bottom center;
-}
-
-.sheet-leave-active {
-  animation: sheet-out 220ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
-  transform-origin: bottom center;
-}
-</style>

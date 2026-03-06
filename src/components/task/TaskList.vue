@@ -192,9 +192,9 @@ onBeforeUnmount(() => {
                       {{ task.taskName }}
                     </span>
                   </div>
-                  <div class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] dark:border-white/10 bg-white dark:bg-[#404040] px-1 py-1">
+                  <div class="task-status-chip">
                     <i class="ri-loader-2-line text-[16px] leading-[16px] text-[#171717] dark:text-[#E5E5E5]" />
-                    <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">
+                    <span class="task-status-text">
                       {{ task.deadline }}
                     </span>
                   </div>
@@ -237,9 +237,9 @@ onBeforeUnmount(() => {
                       {{ task.taskName }}
                     </span>
                   </div>
-                  <div class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] dark:border-white/10 bg-white dark:bg-[#404040] px-1 py-1">
+                  <div class="task-status-chip">
                     <i class="ri-time-fill text-[16px] leading-[16px] text-[#FA7319]" />
-                    <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">待完成</span>
+                    <span class="task-status-text">待完成</span>
                   </div>
                 </div>
               </div>
@@ -360,9 +360,9 @@ onBeforeUnmount(() => {
                     {{ task.taskName }}
                   </span>
                 </div>
-                <div class="flex shrink-0 items-center gap-1 self-start rounded-[6px] border border-[#EBEBEB] dark:border-white/10 bg-white dark:bg-[#404040] px-1 py-1">
+                <div class="task-status-chip">
                   <i class="ri-checkbox-circle-fill text-[16px] leading-[16px] text-[#1FC16B]" />
-                  <span class="pr-1 text-[12px] font-medium leading-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]">已完成</span>
+                  <span class="task-status-text">已完成</span>
                 </div>
               </div>
             </div>
