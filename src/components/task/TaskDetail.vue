@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import type { TaskDetail, Building, InspectionCategory, CheckItem, CheckItemStatus } from '../../types/task'
 import { fetchTaskDetail } from '../../api/task'
@@ -63,6 +63,28 @@ const firstUncheckedItemId = computed(() => {
   for (const cat of b.categories) {
     const item = cat.items.find((i: CheckItem) => i.status === 'unchecked')
     if (item) return item.id
+  }
+  return null
+})
+
+/** 包含第一个未检查项的分类 id，用于「继续巡检」时自动展开 */
+const categoryIdContainingFirstUnchecked = computed(() => {
+  const b = currentBuilding.value
+  const targetId = firstUncheckedItemId.value
+  if (!b || targetId == null) return null
+  const cat = b.categories.find((c) =>
+    c.items.some((i: CheckItem) => i.id === targetId),
+  )
+  return cat?.id ?? null
+})
+
+/** 当前建筑中第一个未检查项对象，用于「继续巡检」时自动弹开表单 */
+const firstUncheckedItem = computed((): CheckItem | null => {
+  const b = currentBuilding.value
+  if (!b) return null
+  for (const cat of b.categories) {
+    const item = cat.items.find((i: CheckItem) => i.status === 'unchecked')
+    if (item) return item
   }
   return null
 })
@@ -287,10 +309,20 @@ function onCall() {
   window.location.href = `tel:${t.phone}`
 }
 
-/** 底部操作：继续巡检（滚动到第一个未检查项） */
-function onContinue() {
+/** 底部操作：继续巡检（展开分类 → 滚动到第一项 → 自动弹开巡检表单） */
+async function onContinue() {
+  const catId = categoryIdContainingFirstUnchecked.value
+  if (catId != null && !expandedCategoryIds.value.includes(catId)) {
+    expandedCategoryIds.value = [...expandedCategoryIds.value, catId]
+    await nextTick()
+  }
   const firstUnchecked = document.querySelector('[data-unchecked-item]')
   firstUnchecked?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  const item = firstUncheckedItem.value
+  if (item) {
+    await nextTick()
+    openSheet(item)
+  }
 }
 
 /** 底部操作：查看报告，打开巡检结果概览浮窗 */
