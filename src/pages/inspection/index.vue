@@ -8,6 +8,7 @@ import { getStoredSession, clearSession } from '@/shared/auth/session'
 import { fetchTaskList } from '@/shared/api/task'
 import type { TaskSection } from '@/shared/types/task'
 import { goLogin, goTaskDetail } from '@/services/platform/navigation'
+import { useTopSafeAreaVars } from '@/services/platform/layout'
 import { useTheme } from '@/services/platform/theme'
 
 const sections = ref<TaskSection[]>([])
@@ -20,6 +21,7 @@ const currentUserName = ref('张检修')
 const currentUserAvatar = ref('/static/avatar-inspector-default.png')
 const isEmptyDemo = ref(false)
 const { isDark } = useTheme()
+const safeAreaVars = useTopSafeAreaVars()
 
 const activeSection = computed(() => sections.value.find((section) => section.key === 'active'))
 const pendingSection = computed(() => sections.value.find((section) => section.key === 'pending'))
@@ -76,7 +78,7 @@ onShow(() => {
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
-    <view class="shell safe-top">
+    <view class="shell safe-top" :style="safeAreaVars">
       <scroll-view scroll-y class="page-scroll">
         <view class="topbar">
           <view class="brand-wrap">
@@ -167,7 +169,7 @@ onShow(() => {
                   </view>
                   <view class="task-status-chip">
                     <AppIcon name="ri-time-fill" color="#fa7319" />
-                    <text class="task-status-text">{{ task.deadline }}</text>
+                    <text class="task-status-text">待完成</text>
                   </view>
                 </view>
               </view>
@@ -179,10 +181,10 @@ onShow(() => {
           </view>
 
           <view class="record-head">
-            <text class="record-title">巡检记录</text>
+            <text class="record-title">归档任务</text>
             <view class="filter-pill" :class="{ active: !!selectedPark }" @tap="showFilterSheet = true">
               <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
-              <text>{{ selectedPark || '园区筛选' }}</text>
+              <text>{{ selectedPark || '筛选' }}</text>
             </view>
           </view>
 
@@ -190,18 +192,17 @@ onShow(() => {
             <view
               v-for="task in filteredCompletedTasks"
               :key="task.id"
-              class="card record-card"
+              class="record-row"
               @tap="goTaskDetail(task.id)"
             >
               <view class="task-head">
                 <view class="task-copy">
                   <text class="task-park">{{ task.parkName }}</text>
                   <text class="task-name">{{ task.taskName }}</text>
-                  <text v-if="task.address" class="task-address">{{ task.address }}</text>
                 </view>
                 <view class="task-status-chip">
                   <AppIcon name="ri-checkbox-circle-fill" color="#1fc16b" />
-                  <text class="task-status-text">{{ task.completedAt }}</text>
+                  <text class="task-status-text">已完成</text>
                 </view>
               </view>
             </view>
@@ -306,8 +307,7 @@ onShow(() => {
 
 .intro-card,
 .empty-card,
-.task-card,
-.record-card {
+.task-card {
   padding: 24rpx;
   margin-top: 16rpx;
 }
@@ -435,7 +435,7 @@ onShow(() => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  padding: 10rpx 18rpx;
+  padding: 10rpx 16rpx;
   border-radius: 999rpx;
   background: transparent;
   font-size: 22rpx;
@@ -449,6 +449,15 @@ onShow(() => {
 
 .record-list {
   padding-bottom: 24rpx;
+  overflow: hidden;
+}
+
+.record-row {
+  padding: 24rpx 0;
+}
+
+.record-row + .record-row {
+  border-top: 1px solid var(--border-subtle);
 }
 
 .planned-scroll {

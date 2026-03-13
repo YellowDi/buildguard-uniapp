@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onPageScroll } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import MaintenanceExecutionSheet from '@/components/maintenance/MaintenanceExecutionSheet.vue'
 import MaintenanceResultSheet from '@/components/maintenance/MaintenanceResultSheet.vue'
@@ -8,7 +8,8 @@ import { fetchMaintenanceTaskDetail } from '@/shared/api/maintenance'
 import type { MaintenanceStep, MaintenanceTaskDetail } from '@/shared/types/maintenance'
 import { daysFromToday, parseTaskDate } from '@/shared/utils/date'
 import { makePhoneCall, openLocation } from '@/services/platform/device'
-import { goMaintenanceHome } from '@/services/platform/navigation'
+import { usePageNavVars } from '@/services/platform/layout'
+import { goBack, goMaintenanceHome } from '@/services/platform/navigation'
 import { useTheme } from '@/services/platform/theme'
 
 const taskId = ref(0)
@@ -23,6 +24,8 @@ const executionVisible = ref(false)
 const executionMode = ref<'before' | 'after'>('before')
 const resultVisible = ref(false)
 const resultConfirmable = ref(false)
+const navScrolled = ref(false)
+const navBarVars = usePageNavVars()
 const { isDark } = useTheme()
 
 const statusLabel = computed(() => {
@@ -134,12 +137,36 @@ onLoad((query) => {
   taskId.value = Number(query?.id || 0)
   loadTask(taskId.value)
 })
+
+onPageScroll((event) => {
+  if (event.scrollTop <= 4) {
+    navScrolled.value = false
+    return
+  }
+  if (event.scrollTop >= 24) {
+    navScrolled.value = true
+  }
+})
 </script>
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
-    <view class="shell safe-top">
-      <scroll-view scroll-y class="page-scroll">
+    <view class="shell">
+      <view class="page-nav" :class="{ 'page-nav--scrolled': navScrolled }" :style="navBarVars">
+        <view class="page-nav__inner">
+          <view class="page-nav__row">
+            <view class="page-nav__side">
+              <view class="page-nav__back" @tap="goBack('/pages/maintenance/index')">
+                <view class="page-nav__back-glyph" />
+              </view>
+            </view>
+            <text class="page-nav__title">维修任务详情</text>
+            <view class="page-nav__side page-nav__side--ghost" />
+          </view>
+        </view>
+      </view>
+      <view class="page-nav-spacer" :style="navBarVars" />
+      <view class="page-scroll">
         <view v-if="loading" class="state-card">
           <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
           <text class="text-muted">加载中…</text>
@@ -210,7 +237,7 @@ onLoad((query) => {
             <text v-for="note in task.safetyNotes" :key="note" class="section-copy">- {{ note }}</text>
           </view>
         </template>
-      </scroll-view>
+      </view>
 
       <view v-if="task && !loading && !notFound" class="bottom-bar safe-bottom">
         <view class="bottom-actions">

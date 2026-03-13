@@ -8,6 +8,7 @@ import { clearSession, getStoredSession } from '@/shared/auth/session'
 import { fetchMaintenanceTaskList } from '@/shared/api/maintenance'
 import type { MaintenanceTask, MaintenanceTaskSection } from '@/shared/types/maintenance'
 import { goLogin, goMaintenanceDetail } from '@/services/platform/navigation'
+import { useTopSafeAreaVars } from '@/services/platform/layout'
 import { useTheme } from '@/services/platform/theme'
 
 const sections = ref<MaintenanceTaskSection[]>([])
@@ -21,6 +22,7 @@ const currentUserAvatar = ref('/static/avatar-maintainer-default.png')
 const currentTradeLabel = ref('电工')
 const currentTrade = ref<'electric' | 'plumbing'>('electric')
 const { isDark } = useTheme()
+const safeAreaVars = useTopSafeAreaVars()
 
 const activeSection = computed(() => sections.value.find((section) => section.key === 'active'))
 const pendingSection = computed(() => sections.value.find((section) => section.key === 'pending'))
@@ -92,7 +94,7 @@ onShow(() => {
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
-    <view class="shell safe-top">
+    <view class="shell safe-top" :style="safeAreaVars">
       <scroll-view scroll-y class="page-scroll">
         <view class="topbar">
           <view class="brand-wrap">
