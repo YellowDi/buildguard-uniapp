@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { computed, getCurrentInstance, nextTick, ref } from 'vue'
+import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
 import UserCardMenu from '@/components/common/UserCardMenu.vue'
@@ -8,7 +8,7 @@ import { getStoredSession, clearSession } from '@/shared/auth/session'
 import { fetchTaskList } from '@/shared/api/task'
 import type { TaskSection } from '@/shared/types/task'
 import { goLogin, goTaskDetail } from '@/services/platform/navigation'
-import { useTopSafeAreaVars } from '@/services/platform/layout'
+import { usePageNavVars } from '@/services/platform/layout'
 import { useTheme } from '@/services/platform/theme'
 
 const sections = ref<TaskSection[]>([])
@@ -17,11 +17,21 @@ const errorMessage = ref('')
 const showFilterSheet = ref(false)
 const showPlannedSheet = ref(false)
 const selectedPark = ref<string | null>(null)
+const navScrolled = ref(false)
+const recordHeadStuck = ref(false)
 const currentUserName = ref('张检修')
 const currentUserAvatar = ref('/static/avatar-inspector-default.png')
 const isEmptyDemo = ref(false)
 const { isDark } = useTheme()
-const safeAreaVars = useTopSafeAreaVars()
+const navBarVars = usePageNavVars()
+const instance = getCurrentInstance()
+let recordHeadThreshold = Number.POSITIVE_INFINITY
+const recordHeadStyle = computed(() => {
+  const navHeight = parseFloat(String(navBarVars['--page-nav-height'] || '44'))
+  return {
+    top: `${navHeight + 12}px`,
+  }
+})
 
 const activeSection = computed(() => sections.value.find((section) => section.key === 'active'))
 const pendingSection = computed(() => sections.value.find((section) => section.key === 'pending'))
@@ -43,6 +53,8 @@ function formatPlanDate(raw: string) {
 async function loadTasks() {
   loading.value = true
   errorMessage.value = ''
+  recordHeadStuck.value = false
+  recordHeadThreshold = Number.POSITIVE_INFINITY
   try {
     const session = getStoredSession()
     currentUserName.value = session?.displayName || '张检修'
@@ -63,6 +75,8 @@ async function loadTasks() {
     errorMessage.value = '任务列表加载失败，请稍后重试'
   } finally {
     loading.value = false
+    await nextTick()
+    measureRecordHeadThreshold()
   }
 }
 
@@ -71,20 +85,66 @@ function onLogout() {
   goLogin()
 }
 
+function measureRecordHeadThreshold() {
+  if (!instance?.proxy || loading.value || errorMessage.value || sections.value.length === 0) {
+    recordHeadThreshold = Number.POSITIVE_INFINITY
+    recordHeadStuck.value = false
+    return
+  }
+
+  const query = uni.createSelectorQuery().in(instance.proxy)
+  query.select('.record-head-anchor').boundingClientRect()
+  query.exec((result) => {
+    const rect = result?.[0] as UniApp.NodeInfo | undefined
+    if (!rect?.top) {
+      recordHeadThreshold = Number.POSITIVE_INFINITY
+      recordHeadStuck.value = false
+      return
+    }
+
+    const navHeight = parseFloat(String(navBarVars['--page-nav-height'] || '44'))
+    const navOffset = 12
+    recordHeadThreshold = Math.max(rect.top - navHeight - navOffset, 0)
+  })
+}
+
 onShow(() => {
   loadTasks()
+})
+
+onPageScroll((event) => {
+  if (event.scrollTop <= 4) {
+    navScrolled.value = false
+  } else if (event.scrollTop >= 36) {
+    navScrolled.value = true
+  }
+
+  if (!Number.isFinite(recordHeadThreshold)) {
+    measureRecordHeadThreshold()
+    return
+  }
+
+  recordHeadStuck.value = event.scrollTop >= recordHeadThreshold
 })
 </script>
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
-    <view class="shell safe-top" :style="safeAreaVars">
-      <scroll-view scroll-y class="page-scroll">
-        <view class="topbar">
-          <view class="brand-wrap">
-            <image class="brand-logo" src="/static/temp_logo.png" mode="aspectFit" />
-            <text class="brand-name">BuildGuard</text>
+    <view class="home-nav" :class="{ 'home-nav--scrolled': navScrolled }" :style="navBarVars">
+      <view class="home-nav__inner">
+        <view class="home-nav__main">
+          <view class="home-nav__brand">
+            <image class="home-nav__logo" src="/static/temp_logo.png" mode="aspectFit" />
+            <text class="home-nav__brand-text">BuildGuard</text>
           </view>
+        </view>
+      </view>
+    </view>
+    <view class="shell">
+      <view class="home-nav-spacer" :style="navBarVars" />
+      <view class="page-scroll">
+        <view class="workspace-head">
+          <text class="workspace-title" :class="{ hidden: navScrolled }">BuildGuard</text>
           <UserCardMenu
             :name="currentUserName"
             :avatar-url="currentUserAvatar"
@@ -180,11 +240,14 @@ onShow(() => {
             </view>
           </view>
 
-          <view class="record-head">
-            <text class="record-title">归档任务</text>
-            <view class="filter-pill" :class="{ active: !!selectedPark }" @tap="showFilterSheet = true">
-              <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
-              <text>{{ selectedPark || '筛选' }}</text>
+          <view class="record-head-anchor" />
+          <view class="record-sticky" :class="{ 'record-sticky--stuck': recordHeadStuck }" :style="recordHeadStyle">
+            <view class="record-head">
+              <text class="record-title">归档任务</text>
+              <view class="filter-pill" :class="{ active: !!selectedPark }" @tap="showFilterSheet = true">
+                <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
+                <text>{{ selectedPark || '筛选' }}</text>
+              </view>
             </view>
           </view>
 
@@ -208,7 +271,7 @@ onShow(() => {
             </view>
           </view>
         </template>
-      </scroll-view>
+      </view>
     </view>
 
     <BaseSheet :visible="showFilterSheet" title="筛选园区" @close="showFilterSheet = false">
@@ -265,34 +328,40 @@ onShow(() => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  padding: 0 32rpx 24rpx;
+  --page-content-gutter: 32rpx;
+  padding: 0 var(--page-content-gutter) 24rpx;
   box-sizing: border-box;
 }
 
-.topbar {
+.workspace-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16rpx;
+  justify-content: flex-end;
+  gap: 20rpx;
   margin-bottom: 16rpx;
 }
 
-.brand-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.brand-logo {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 18rpx;
-}
-
-.brand-name {
-  font-size: 32rpx;
+.workspace-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 38rpx;
+  line-height: 48rpx;
   font-weight: 700;
   color: var(--text-primary);
+  opacity: 1;
+  transform: translateX(0) translateY(0);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+
+.workspace-title.hidden {
+  opacity: 0;
+  transform: translateX(18rpx) translateY(-8rpx);
+}
+
+.workspace-head :deep(.menu-trigger) {
+  padding: 12rpx 0;
 }
 
 .state-card,
@@ -306,8 +375,7 @@ onShow(() => {
 }
 
 .intro-card,
-.empty-card,
-.task-card {
+.empty-card {
   padding: 24rpx;
   margin-top: 16rpx;
 }
@@ -361,13 +429,15 @@ onShow(() => {
 
 .task-card {
   overflow: hidden;
+  padding: 0;
+  margin-top: 0;
 }
 
 .task-item {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
-  padding: 24rpx 0;
+  gap: 16rpx;
+  padding: 24rpx;
 }
 
 .task-item.divided {
@@ -376,7 +446,7 @@ onShow(() => {
 
 .task-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 20rpx;
 }
@@ -384,38 +454,84 @@ onShow(() => {
 .task-copy {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .task-park {
   display: block;
-  font-size: 30rpx;
-  line-height: 42rpx;
-  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
 .task-name,
 .task-address {
   display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  line-height: 36rpx;
+  margin-top: 0;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
 .inline-btn {
-  height: 80rpx;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 .pending-wrap {
-  margin: 0 -24rpx;
-  padding: 0 24rpx;
-  background: var(--bg-soft);
+  margin: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.theme-dark) .pending-wrap,
+.theme-dark .pending-wrap {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .card-foot {
-  padding-top: 24rpx;
+  padding: 24rpx;
   border-top: 1px solid var(--border-subtle);
+}
+
+.card-foot .btn {
+  height: 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.record-sticky {
+  position: sticky;
+  position: -webkit-sticky;
+  z-index: 48;
+  margin: 0 calc(-1 * var(--page-content-gutter));
+  padding: 0 var(--page-content-gutter);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.record-sticky--stuck {
+  background: var(--bg-card);
+  border-bottom-color: rgba(23, 23, 23, 0.12);
+  box-shadow: 0 4px 12px rgba(23, 23, 23, 0.04);
+}
+
+.theme-dark .record-sticky--stuck {
+  background: var(--bg-card);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
 }
 
 .record-head {
@@ -423,11 +539,17 @@ onShow(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16rpx 0 10rpx;
+}
+
+.record-head-anchor {
+  height: 0;
 }
 
 .record-title {
-  font-size: 34rpx;
-  font-weight: 700;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -453,7 +575,7 @@ onShow(() => {
 }
 
 .record-row {
-  padding: 24rpx 0;
+  padding: 16px 0;
 }
 
 .record-row + .record-row {

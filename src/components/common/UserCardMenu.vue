@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { getCurrentInstance, nextTick, ref, watch } from 'vue'
 import AppIcon from '@/components/common/app-icon.vue'
 import { useTheme } from '@/services/platform/theme'
 
@@ -15,12 +15,39 @@ const emit = defineEmits<{
 }>()
 
 const { isDark, toggleTheme } = useTheme()
+const instance = getCurrentInstance()
 const open = ref(false)
+const fusionHeight = ref(0)
+
+function updateFusionHeight() {
+  nextTick(() => {
+    if (!instance?.proxy) return
+    const query = uni.createSelectorQuery().in(instance.proxy)
+    query.select('.menu-trigger').boundingClientRect()
+    query.select('.menu-panel').boundingClientRect()
+    query.exec((result) => {
+      const triggerRect = result?.[0]
+      const panelRect = result?.[1]
+      if (!triggerRect || !panelRect) return
+      fusionHeight.value = Math.ceil((triggerRect.height || 0) + (panelRect.height || 0))
+    })
+  })
+}
+
+watch(open, (value) => {
+  if (!value) return
+  updateFusionHeight()
+})
 </script>
 
 <template>
   <view class="menu-root">
     <view v-if="open" class="menu-mask" @tap="open = false" />
+    <view
+      v-if="open"
+      class="menu-fusion-bg"
+      :style="fusionHeight ? { height: `${fusionHeight}px` } : undefined"
+    />
 
     <view class="menu-block" :class="{ expanded: open }">
       <view class="menu-trigger" @tap="open = !open">
@@ -59,35 +86,54 @@ const open = ref(false)
 <style scoped>
 .menu-root {
   position: relative;
-  z-index: 40;
+  z-index: 20;
+  width: fit-content;
 }
 
 .menu-mask {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 10;
   background: transparent;
+}
+
+.menu-fusion-bg {
+  position: absolute;
+  top: 0;
+  left: -12rpx;
+  right: -12rpx;
+  z-index: 15;
+  border-radius: 20rpx;
+  background: var(--bg-card);
+  box-shadow:
+    0 0 0 1px rgba(23, 23, 23, 0.08),
+    0 8px 24px rgba(23, 23, 23, 0.08),
+    0 1px 2px rgba(23, 23, 23, 0.04);
+}
+
+.theme-dark .menu-fusion-bg,
+:deep(.theme-dark) .menu-fusion-bg {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 10px 26px rgba(0, 0, 0, 0.24),
+    0 2px 4px rgba(0, 0, 0, 0.18);
 }
 
 .menu-block {
   position: relative;
-  z-index: 40;
-  min-width: 244rpx;
-}
-
-.menu-block.expanded {
-  border-radius: 20rpx 20rpx 18rpx 18rpx;
-  background: var(--bg-card);
-  box-shadow: var(--card-shadow);
+  z-index: 20;
+  min-width: 236rpx;
+  border-radius: 20rpx;
 }
 
 .menu-trigger {
-  padding: 12rpx 16rpx;
+  padding: 14rpx 16rpx;
   border-radius: 20rpx;
   display: flex;
   align-items: center;
-  gap: 14rpx;
+  gap: 12rpx;
   background: transparent;
+  transition: background-color 0.18s ease;
 }
 
 .expanded .menu-trigger {
@@ -97,7 +143,7 @@ const open = ref(false)
 .avatar {
   width: 80rpx;
   height: 80rpx;
-  border-radius: 12rpx;
+  border-radius: 14rpx;
   background: #c4c4c4;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9);
 }
@@ -109,24 +155,25 @@ const open = ref(false)
 .trigger-copy {
   display: flex;
   flex-direction: column;
-  gap: 2rpx;
+  gap: 4rpx;
 }
 
 .trigger-name {
   font-size: 26rpx;
   line-height: 34rpx;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
 .trigger-count {
   font-size: 22rpx;
-  line-height: 30rpx;
+  line-height: 28rpx;
   color: var(--text-secondary);
 }
 
 .trigger-arrow {
-  font-size: 32rpx;
+  width: 28rpx;
+  height: 28rpx;
   transition: transform 0.25s ease;
 }
 
@@ -137,22 +184,23 @@ const open = ref(false)
 .menu-panel {
   position: absolute;
   top: calc(100% - 2rpx);
-  left: 0;
-  right: 0;
+  left: -12rpx;
+  right: -12rpx;
+  z-index: 25;
   overflow: hidden;
   border-radius: 0 0 18rpx 18rpx;
-  background: var(--bg-card);
-  z-index: 40;
+  background: transparent;
 }
 
 .menu-item {
-  height: 84rpx;
+  height: 80rpx;
   padding: 0 24rpx;
   display: flex;
   align-items: center;
   gap: 12rpx;
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: var(--text-primary);
+  background: transparent;
 }
 
 .menu-item + .menu-item {

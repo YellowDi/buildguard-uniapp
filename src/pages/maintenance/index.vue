@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
 import UserCardMenu from '@/components/common/UserCardMenu.vue'
@@ -8,7 +8,7 @@ import { clearSession, getStoredSession } from '@/shared/auth/session'
 import { fetchMaintenanceTaskList } from '@/shared/api/maintenance'
 import type { MaintenanceTask, MaintenanceTaskSection } from '@/shared/types/maintenance'
 import { goLogin, goMaintenanceDetail } from '@/services/platform/navigation'
-import { useTopSafeAreaVars } from '@/services/platform/layout'
+import { usePageNavVars } from '@/services/platform/layout'
 import { useTheme } from '@/services/platform/theme'
 
 const sections = ref<MaintenanceTaskSection[]>([])
@@ -17,12 +17,13 @@ const errorMessage = ref('')
 const selectedPark = ref<string | null>(null)
 const showFilterSheet = ref(false)
 const showPlannedSheet = ref(false)
+const navScrolled = ref(false)
 const currentUserName = ref('李电工')
 const currentUserAvatar = ref('/static/avatar-maintainer-default.png')
 const currentTradeLabel = ref('电工')
 const currentTrade = ref<'electric' | 'plumbing'>('electric')
 const { isDark } = useTheme()
-const safeAreaVars = useTopSafeAreaVars()
+const navBarVars = usePageNavVars()
 
 const activeSection = computed(() => sections.value.find((section) => section.key === 'active'))
 const pendingSection = computed(() => sections.value.find((section) => section.key === 'pending'))
@@ -90,17 +91,35 @@ function onLogout() {
 onShow(() => {
   loadTasks()
 })
+
+onPageScroll((event) => {
+  if (event.scrollTop <= 4) {
+    navScrolled.value = false
+    return
+  }
+  if (event.scrollTop >= 36) {
+    navScrolled.value = true
+  }
+})
 </script>
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
-    <view class="shell safe-top" :style="safeAreaVars">
-      <scroll-view scroll-y class="page-scroll">
-        <view class="topbar">
-          <view class="brand-wrap">
-            <image class="brand-logo" src="/static/temp_logo.png" mode="aspectFit" />
-            <text class="brand-name">BuildGuard</text>
+    <view class="home-nav" :class="{ 'home-nav--scrolled': navScrolled }" :style="navBarVars">
+      <view class="home-nav__inner">
+        <view class="home-nav__main">
+          <view class="home-nav__brand">
+            <image class="home-nav__logo" src="/static/temp_logo.png" mode="aspectFit" />
+            <text class="home-nav__brand-text">BuildGuard</text>
           </view>
+        </view>
+      </view>
+    </view>
+    <view class="shell">
+      <view class="home-nav-spacer" :style="navBarVars" />
+      <view class="page-scroll">
+        <view class="workspace-head">
+          <text class="workspace-title" :class="{ hidden: navScrolled }">BuildGuard</text>
           <UserCardMenu
             :name="currentUserName"
             :avatar-url="currentUserAvatar"
@@ -221,7 +240,7 @@ onShow(() => {
             </view>
           </view>
         </template>
-      </scroll-view>
+      </view>
     </view>
 
     <BaseSheet :visible="showFilterSheet" title="筛选园区" @close="showFilterSheet = false">
@@ -280,34 +299,40 @@ onShow(() => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  padding: 0 32rpx 24rpx;
+  --page-content-gutter: 32rpx;
+  padding: 0 var(--page-content-gutter) 24rpx;
   box-sizing: border-box;
 }
 
-.topbar {
+.workspace-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16rpx;
+  justify-content: flex-end;
+  gap: 20rpx;
   margin-bottom: 16rpx;
 }
 
-.brand-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.brand-logo {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 18rpx;
-}
-
-.brand-name {
-  font-size: 32rpx;
+.workspace-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 38rpx;
+  line-height: 48rpx;
   font-weight: 700;
   color: var(--text-primary);
+  opacity: 1;
+  transform: translateX(0) translateY(0);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+
+.workspace-title.hidden {
+  opacity: 0;
+  transform: translateX(18rpx) translateY(-8rpx);
+}
+
+.workspace-head :deep(.menu-trigger) {
+  padding: 12rpx 0;
 }
 
 .state-card,
