@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import AppIcon from '@/components/common/app-icon.vue'
 import { DEMO_USERS, authenticateDemoUser, resolveHomePath, saveSession, type DemoUser } from '@/shared/auth/session'
 import { goToPage } from '@/services/platform/navigation'
 import { useTheme } from '@/services/platform/theme'
@@ -51,26 +52,37 @@ function quickLogin(user: DemoUser) {
           <view class="field">
             <text class="label">用户名</text>
             <view class="input-wrap">
-              <text class="app-icon ri-user-line input-icon" />
-              <input v-model="username" class="input" placeholder="请输入用户名" />
+              <AppIcon name="ri-user-line" class="input-icon" :color="isDark ? '#a3a3a3' : '#5c5c5c'" />
+              <input
+                v-model="username"
+                class="input"
+                placeholder="请输入用户名"
+                :placeholder-style="`color:${isDark ? '#737373' : '#a3a3a3'}`"
+              />
             </view>
           </view>
 
           <view class="field">
             <text class="label">密码</text>
             <view class="input-wrap">
-              <text class="app-icon ri-lock-line input-icon" />
-              <input v-model="password" class="input" password placeholder="请输入密码（至少 6 位）" />
+              <AppIcon name="ri-lock-line" class="input-icon" :color="isDark ? '#a3a3a3' : '#5c5c5c'" />
+              <input
+                v-model="password"
+                class="input"
+                password
+                placeholder="请输入密码（至少 6 位）"
+                :placeholder-style="`color:${isDark ? '#737373' : '#a3a3a3'}`"
+              />
             </view>
           </view>
 
           <view v-if="error" class="error-text">
-            <text class="app-icon ri-error-warning-line" />
+            <AppIcon name="ri-error-warning-line" color="#e5484d" />
             <text>{{ error }}</text>
           </view>
 
           <view class="btn btn-primary submit-btn" :class="{ disabled: !canSubmit }" @tap="submit">
-            <text v-if="loading" class="app-icon ri-loader-4-line spinner" />
+            <AppIcon v-if="loading" name="ri-loader-4-line" class="spinner" :color="isDark ? '#262626' : '#ffffff'" />
             <text>{{ loading ? '登录中…' : '登录' }}</text>
           </view>
 
@@ -91,7 +103,7 @@ function quickLogin(user: DemoUser) {
                     <text class="quick-meta">账号 {{ user.username }} / 密码 {{ user.password }}</text>
                   </view>
                 </view>
-                <text class="app-icon ri-arrow-right-line quick-arrow" />
+                <AppIcon name="ri-arrow-right-line" class="quick-arrow" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
               </view>
             </view>
           </view>
@@ -111,6 +123,7 @@ function quickLogin(user: DemoUser) {
   display: flex;
   flex-direction: column;
   gap: 40rpx;
+  width: 100%;
 }
 
 .brand {
@@ -124,6 +137,7 @@ function quickLogin(user: DemoUser) {
   width: 112rpx;
   height: 112rpx;
   border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(23, 23, 23, 0.1);
 }
 
 .brand-copy {
@@ -137,15 +151,17 @@ function quickLogin(user: DemoUser) {
   font-size: 40rpx;
   line-height: 52rpx;
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 .brand-subtitle {
   font-size: 24rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .form-card {
   padding: 32rpx;
+  overflow: hidden;
 }
 
 .field + .field {
@@ -157,27 +173,29 @@ function quickLogin(user: DemoUser) {
   margin-bottom: 12rpx;
   font-size: 24rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .input-wrap {
   height: 92rpx;
   border-radius: 20rpx;
-  border: 1px solid #ebebeb;
-  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   gap: 14rpx;
   padding: 0 24rpx;
+  box-sizing: border-box;
 }
 
 .input-icon {
   font-size: 32rpx;
-  color: #5c5c5c;
 }
 
 .input {
   flex: 1;
   font-size: 30rpx;
+  color: var(--text-primary);
 }
 
 .error-text {
@@ -194,7 +212,14 @@ function quickLogin(user: DemoUser) {
 }
 
 .submit-btn.disabled {
-  opacity: 0.5;
+  background: #e5e5e5;
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+.theme-dark .submit-btn.disabled {
+  background: var(--bg-softer);
+  color: var(--text-secondary);
 }
 
 .spinner {
@@ -204,15 +229,16 @@ function quickLogin(user: DemoUser) {
 .quick-card {
   margin-top: 28rpx;
   padding: 24rpx;
-  border: 1px dashed #d4d4d4;
+  border: 1px dashed var(--border-strong);
   border-radius: 24rpx;
-  background: #fafafa;
+  background: var(--bg-muted);
 }
 
 .quick-title {
   display: block;
   font-size: 24rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .quick-subtitle {
@@ -220,7 +246,7 @@ function quickLogin(user: DemoUser) {
   margin-top: 8rpx;
   font-size: 22rpx;
   line-height: 32rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .quick-list {
@@ -233,8 +259,8 @@ function quickLogin(user: DemoUser) {
 .quick-item {
   padding: 24rpx;
   border-radius: 24rpx;
-  background: #ffffff;
-  border: 1px solid #ebebeb;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -251,6 +277,7 @@ function quickLogin(user: DemoUser) {
   width: 80rpx;
   height: 80rpx;
   border-radius: 16rpx;
+  background: var(--bg-softer);
 }
 
 .quick-copy {
@@ -267,6 +294,7 @@ function quickLogin(user: DemoUser) {
 .quick-name {
   font-size: 28rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .quick-desc,
@@ -275,21 +303,26 @@ function quickLogin(user: DemoUser) {
   margin-top: 8rpx;
   font-size: 22rpx;
   line-height: 32rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
+}
+
+.quick-meta {
+  font-size: 20rpx;
+  line-height: 30rpx;
+  color: var(--text-tertiary);
 }
 
 .trade-chip {
   padding: 6rpx 14rpx;
   border-radius: 999rpx;
-  background: #eef6ff;
-  color: #006adc;
+  background: var(--bg-chip-info);
+  color: var(--brand-blue);
   font-size: 22rpx;
 }
 
 .quick-arrow {
   margin-top: 6rpx;
   font-size: 30rpx;
-  color: #a3a3a3;
 }
 
 @keyframes spin {

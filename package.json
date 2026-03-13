@@ -9,9 +9,7 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:h5": "uni build",
     "build:mp-weixin": "uni build -p mp-weixin",
-    "typecheck": "vue-tsc --noEmit",
-    "dev:legacy-h5": "pnpm --dir legacy-h5 dev",
-    "build:legacy-h5": "pnpm --dir legacy-h5 build"
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@dcloudio/uni-app": "^3.0.0-4060920260228001",

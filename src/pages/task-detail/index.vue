@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import AppIcon from '@/components/common/app-icon.vue'
 import InspectionEditorSheet from '@/components/task/InspectionEditorSheet.vue'
 import TaskReportSheet from '@/components/task/TaskReportSheet.vue'
 import { fetchTaskDetail } from '@/shared/api/task'
@@ -216,29 +217,31 @@ onLoad((query) => {
     <view class="shell safe-top">
       <scroll-view scroll-y class="page-scroll">
         <view v-if="loading" class="state-card">
-          <text class="app-icon ri-loader-4-line state-icon spinner" />
+          <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
           <text class="text-muted">加载中…</text>
         </view>
 
         <view v-else-if="errorMessage" class="state-card">
-          <text class="app-icon ri-error-warning-line state-icon error" />
+          <AppIcon name="ri-error-warning-line" class="state-icon error" color="#e5484d" />
           <text class="text-muted">{{ errorMessage }}</text>
           <view class="btn btn-primary retry-btn" @tap="loadTask(taskId)">重试</view>
         </view>
 
         <view v-else-if="notFound" class="state-card">
-          <text class="app-icon ri-file-search-line state-icon" />
+          <AppIcon name="ri-file-search-line" class="state-icon" color="#5c5c5c" />
           <text class="text-muted">任务不存在或已被删除</text>
           <view class="btn btn-primary retry-btn" @tap="goInspectionHome()">返回工作台</view>
         </view>
 
         <template v-else-if="task">
           <view class="card detail-card">
-            <text class="chip">{{ statusLabel }}</text>
+            <view class="head-row">
+              <text class="chip">{{ statusLabel }}</text>
+              <text v-if="timeRemainingLabel" class="meta-tag">{{ timeRemainingLabel }}</text>
+            </view>
             <text class="title">{{ task.taskName }}</text>
             <text class="subtitle">{{ task.parkName }}</text>
             <text class="meta">{{ deadlineDisplayText }}</text>
-            <text v-if="timeRemainingLabel" class="meta-tag">{{ timeRemainingLabel }}</text>
 
             <view class="progress-row">
               <view class="progress-track">
@@ -282,7 +285,11 @@ onLoad((query) => {
               </view>
               <view class="category-side">
                 <text class="category-meta">{{ categoryStats(category).done }}/{{ categoryStats(category).total }}</text>
-                <text class="app-icon ri-arrow-down-s-line" :class="{ rotated: expandedCategoryIds.includes(category.id) }" />
+                  <AppIcon
+                    name="ri-arrow-down-s-line"
+                    :color="isDark ? '#a3a3a3' : '#5c5c5c'"
+                    :class="{ rotated: expandedCategoryIds.includes(category.id) }"
+                  />
               </view>
             </view>
 
@@ -297,7 +304,7 @@ onLoad((query) => {
                   <text class="item-name">{{ item.name }}</text>
                   <text class="item-status" :class="itemStatusClass(item.status)">{{ itemStatusLabel(item.status) }}</text>
                 </view>
-                <text class="app-icon ri-arrow-right-s-line item-arrow" />
+                <AppIcon name="ri-arrow-right-s-line" class="item-arrow" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
               </view>
             </view>
           </view>
@@ -352,12 +359,20 @@ onLoad((query) => {
   margin-top: 16rpx;
 }
 
+.head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
 .title {
   display: block;
   margin-top: 16rpx;
   font-size: 36rpx;
   line-height: 52rpx;
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 .subtitle,
@@ -366,16 +381,15 @@ onLoad((query) => {
   margin-top: 10rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .meta-tag {
   display: inline-flex;
-  margin-top: 16rpx;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
-  background: #eef6ff;
-  color: #006adc;
+  background: var(--bg-chip-info);
+  color: var(--brand-blue);
   font-size: 22rpx;
 }
 
@@ -390,19 +404,19 @@ onLoad((query) => {
   flex: 1;
   height: 14rpx;
   border-radius: 999rpx;
-  background: #ebebeb;
+  background: var(--border-subtle);
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
   border-radius: inherit;
-  background: #171717;
+  background: var(--text-primary);
 }
 
 .progress-text {
   font-size: 24rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .info-grid {
@@ -415,7 +429,7 @@ onLoad((query) => {
 .info-label {
   display: block;
   font-size: 22rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .info-value {
@@ -423,6 +437,7 @@ onLoad((query) => {
   margin-top: 6rpx;
   font-size: 26rpx;
   line-height: 38rpx;
+  color: var(--text-primary);
 }
 
 .building-tabs {
@@ -438,18 +453,19 @@ onLoad((query) => {
   min-width: 200rpx;
   padding: 20rpx;
   border-radius: 20rpx;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--bg-soft);
 }
 
 .building-tab.active {
-  background: #171717;
-  color: #fff;
+  background: var(--text-primary);
+  color: var(--bg-card);
 }
 
 .building-name {
   display: block;
   font-size: 26rpx;
   font-weight: 600;
+  color: inherit;
 }
 
 .building-meta {
@@ -457,6 +473,7 @@ onLoad((query) => {
   margin-top: 6rpx;
   font-size: 22rpx;
   opacity: 0.8;
+  color: inherit;
 }
 
 .category-head {
@@ -474,6 +491,7 @@ onLoad((query) => {
   display: block;
   font-size: 28rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .category-desc {
@@ -481,14 +499,14 @@ onLoad((query) => {
   margin-top: 8rpx;
   font-size: 22rpx;
   line-height: 32rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .category-side {
   display: flex;
   align-items: center;
   gap: 10rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .category-meta {
@@ -512,41 +530,51 @@ onLoad((query) => {
 }
 
 .item-row + .item-row {
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .item-copy {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .item-name {
   display: block;
   font-size: 26rpx;
   line-height: 38rpx;
+  color: var(--text-primary);
 }
 
 .item-status {
-  display: block;
-  margin-top: 6rpx;
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
   font-size: 22rpx;
-  color: #5c5c5c;
+  line-height: 30rpx;
+  background: var(--bg-chip);
+  color: var(--text-secondary);
 }
 
 .item-status.normal {
-  color: #1fc16b;
+  background: var(--status-success-soft);
+  color: var(--status-success);
 }
 
 .item-status.focus {
-  color: #fa7319;
+  background: var(--status-warning-soft);
+  color: var(--status-warning);
 }
 
 .item-status.risk {
-  color: #e5484d;
+  background: var(--status-danger-soft);
+  color: var(--status-danger);
 }
 
 .item-arrow {
   font-size: 28rpx;
-  color: #a3a3a3;
 }
 
 .bottom-bar {
@@ -554,7 +582,8 @@ onLoad((query) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(235, 235, 235, 0.95);
+  background: var(--bg-page);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .bottom-actions {
@@ -575,7 +604,7 @@ onLoad((query) => {
 
 .state-icon {
   font-size: 56rpx;
-  color: #a3a3a3;
+  color: var(--text-quaternary);
 }
 
 .state-icon.error {

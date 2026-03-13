@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
 import { chooseMedia } from '@/services/platform/media'
 
@@ -81,11 +82,11 @@ function submit() {
           <view v-for="(media, index) in localBeforeMedia" :key="`${media}-${index}`" class="media-card">
             <image class="media-image" :src="media" mode="aspectFill" />
             <view v-if="mode === 'before'" class="remove-dot" @tap="removeMedia('before', index)">
-              <text class="app-icon ri-close-line" />
+              <AppIcon name="ri-close-line" color="#ffffff" />
             </view>
           </view>
           <view v-if="mode === 'before'" class="media-upload" @tap="onChoose('before')">
-            <text class="app-icon ri-camera-line upload-icon" />
+            <AppIcon name="ri-camera-line" class="upload-icon" color="#a3a3a3" />
             <text class="upload-text">上传前记录</text>
           </view>
         </view>
@@ -100,11 +101,11 @@ function submit() {
           <view v-for="(media, index) in localAfterMedia" :key="`${media}-${index}`" class="media-card">
             <image class="media-image" :src="media" mode="aspectFill" />
             <view class="remove-dot" @tap="removeMedia('after', index)">
-              <text class="app-icon ri-close-line" />
+              <AppIcon name="ri-close-line" color="#ffffff" />
             </view>
           </view>
           <view class="media-upload" @tap="onChoose('after')">
-            <text class="app-icon ri-video-add-line upload-icon" />
+            <AppIcon name="ri-video-add-line" class="upload-icon" color="#a3a3a3" />
             <text class="upload-text">上传后记录</text>
           </view>
         </view>
@@ -152,12 +153,12 @@ function submit() {
 .field-label {
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #171717;
+  color: var(--text-primary);
 }
 
 .field-link {
   font-size: 24rpx;
-  color: #006adc;
+  color: var(--brand-blue);
 }
 
 .media-grid {
@@ -176,7 +177,7 @@ function submit() {
 }
 
 .media-card {
-  background: #f5f5f5;
+  background: var(--bg-softer);
 }
 
 .media-image {
@@ -185,8 +186,8 @@ function submit() {
 }
 
 .media-upload {
-  border: 1px dashed #d4d4d4;
-  background: #fafafa;
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -196,12 +197,12 @@ function submit() {
 
 .upload-icon {
   font-size: 44rpx;
-  color: #a3a3a3;
+  color: var(--text-quaternary);
 }
 
 .upload-text {
   font-size: 22rpx;
-  color: #a3a3a3;
+  color: var(--text-quaternary);
 }
 
 .remove-dot {
@@ -222,16 +223,17 @@ function submit() {
   width: 100%;
   min-height: 180rpx;
   border-radius: 20rpx;
-  background: #fafafa;
+  background: var(--bg-softer);
   padding: 24rpx;
   box-sizing: border-box;
   font-size: 28rpx;
   line-height: 40rpx;
+  color: var(--text-primary);
 }
 
 .sheet-footer {
   padding: 24rpx 32rpx 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .sheet-actions {

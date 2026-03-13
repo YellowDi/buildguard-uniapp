@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import AppIcon from '@/components/common/app-icon.vue'
 import MaintenanceExecutionSheet from '@/components/maintenance/MaintenanceExecutionSheet.vue'
 import MaintenanceResultSheet from '@/components/maintenance/MaintenanceResultSheet.vue'
 import { fetchMaintenanceTaskDetail } from '@/shared/api/maintenance'
@@ -140,18 +141,18 @@ onLoad((query) => {
     <view class="shell safe-top">
       <scroll-view scroll-y class="page-scroll">
         <view v-if="loading" class="state-card">
-          <text class="app-icon ri-loader-4-line state-icon spinner" />
+          <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
           <text class="text-muted">加载中…</text>
         </view>
 
         <view v-else-if="errorMessage" class="state-card">
-          <text class="app-icon ri-error-warning-line state-icon error" />
+          <AppIcon name="ri-error-warning-line" class="state-icon error" color="#e5484d" />
           <text class="text-muted">{{ errorMessage }}</text>
           <view class="btn btn-primary retry-btn" @tap="loadTask(taskId)">重试</view>
         </view>
 
         <view v-else-if="notFound" class="state-card">
-          <text class="app-icon ri-file-search-line state-icon" />
+          <AppIcon name="ri-file-search-line" class="state-icon" color="#5c5c5c" />
           <text class="text-muted">维修任务不存在或已被删除</text>
           <view class="btn btn-primary retry-btn" @tap="goMaintenanceHome()">返回工作台</view>
         </view>
@@ -284,6 +285,7 @@ onLoad((query) => {
   font-size: 36rpx;
   line-height: 52rpx;
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 .subtitle,
@@ -293,14 +295,14 @@ onLoad((query) => {
   margin-top: 10rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .meta-tag {
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
-  background: #eef6ff;
-  color: #006adc;
+  background: var(--bg-chip-info);
+  color: var(--brand-blue);
   font-size: 22rpx;
 }
 
@@ -308,6 +310,7 @@ onLoad((query) => {
   display: block;
   font-size: 28rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .kv-row {
@@ -318,13 +321,13 @@ onLoad((query) => {
 }
 
 .kv-row + .kv-row {
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .kv-label {
   width: 140rpx;
   font-size: 24rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .kv-value {
@@ -332,6 +335,7 @@ onLoad((query) => {
   font-size: 26rpx;
   line-height: 38rpx;
   text-align: right;
+  color: var(--text-primary);
 }
 
 .section-copy {
@@ -339,13 +343,14 @@ onLoad((query) => {
   margin-top: 10rpx;
   font-size: 26rpx;
   line-height: 38rpx;
+  color: var(--text-primary);
 }
 
 .subheading {
   display: block;
   margin-top: 18rpx;
   font-size: 24rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .step-row {
@@ -356,14 +361,14 @@ onLoad((query) => {
 }
 
 .step-row + .step-row {
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .step-dot {
   width: 20rpx;
   height: 20rpx;
   border-radius: 999rpx;
-  background: #d4d4d4;
+  background: var(--border-strong);
   margin-top: 10rpx;
 }
 
@@ -372,7 +377,7 @@ onLoad((query) => {
 }
 
 .step-dot.active {
-  background: #171717;
+  background: var(--text-primary);
 }
 
 .step-copy {
@@ -383,6 +388,7 @@ onLoad((query) => {
   display: block;
   font-size: 26rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .step-desc {
@@ -390,12 +396,12 @@ onLoad((query) => {
   margin-top: 6rpx;
   font-size: 24rpx;
   line-height: 34rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .step-status {
   font-size: 22rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .bottom-bar {
@@ -403,7 +409,8 @@ onLoad((query) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(235, 235, 235, 0.95);
+  background: var(--bg-page);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .bottom-actions {
@@ -424,7 +431,7 @@ onLoad((query) => {
 
 .state-icon {
   font-size: 56rpx;
-  color: #a3a3a3;
+  color: var(--text-quaternary);
 }
 
 .state-icon.error {

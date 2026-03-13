@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
 import type { CheckItem, CheckItemStatus } from '@/shared/types/task'
 import { chooseImages } from '@/services/platform/media'
+import { useTheme } from '@/services/platform/theme'
 
 const props = defineProps<{
   visible: boolean
@@ -21,6 +23,7 @@ const selectedStatus = ref<CheckItemStatus>('unchecked')
 const photos = ref<string[]>([])
 const description = ref('')
 const impact = ref('')
+const { isDark } = useTheme()
 
 watch(
   () => props.visible,
@@ -69,21 +72,21 @@ function submit() {
             :class="{ active: selectedStatus === 'normal', normal: selectedStatus === 'normal' }"
             @tap="selectedStatus = 'normal'"
           >
-            <text>一切正常</text>
+            <text class="status-text">一切正常</text>
           </view>
           <view
             class="status-card"
             :class="{ active: selectedStatus === 'focus', focus: selectedStatus === 'focus' }"
             @tap="selectedStatus = 'focus'"
           >
-            <text>需重点关注</text>
+            <text class="status-text">需重点关注</text>
           </view>
           <view
             class="status-card"
             :class="{ active: selectedStatus === 'risk', risk: selectedStatus === 'risk' }"
             @tap="selectedStatus = 'risk'"
           >
-            <text>存在风险</text>
+            <text class="status-text">存在风险</text>
           </view>
         </view>
       </view>
@@ -94,11 +97,11 @@ function submit() {
           <view v-for="(photo, index) in photos" :key="`${photo}-${index}`" class="photo-card">
             <image class="photo-img" :src="photo" mode="aspectFill" />
             <view class="remove-dot" @tap="removePhoto(index)">
-              <text class="app-icon ri-close-line" />
+              <AppIcon name="ri-close-line" color="#ffffff" />
             </view>
           </view>
           <view class="photo-upload" @tap="onChooseImages">
-            <text class="app-icon ri-camera-line photo-icon" />
+            <AppIcon name="ri-camera-line" class="photo-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
             <text class="photo-text">上传照片</text>
           </view>
         </view>
@@ -146,7 +149,7 @@ function submit() {
   margin-bottom: 16rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
+  color: var(--text-primary);
 }
 
 .status-grid {
@@ -156,32 +159,46 @@ function submit() {
 
 .status-card {
   flex: 1;
-  min-height: 84rpx;
+  min-height: 96rpx;
   border-radius: 20rpx;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--bg-card);
+}
+
+.status-text {
   font-size: 24rpx;
-  color: #5c5c5c;
+  line-height: 34rpx;
+  color: var(--text-secondary);
 }
 
 .status-card.active.normal {
-  border-color: #1fc16b;
-  background: #f0fdf4;
-  color: #1fc16b;
+  border-color: var(--status-success);
+  background: var(--status-success-soft);
 }
 
 .status-card.active.focus {
-  border-color: #fa7319;
-  background: #fff7ed;
-  color: #fa7319;
+  border-color: var(--status-warning);
+  background: var(--status-warning-soft);
 }
 
 .status-card.active.risk {
-  border-color: #e5484d;
-  background: #fef2f2;
-  color: #e5484d;
+  border-color: var(--status-danger);
+  background: var(--status-danger-soft);
+}
+
+.status-card.active.normal .status-text {
+  color: var(--status-success);
+}
+
+.status-card.active.focus .status-text {
+  color: var(--status-warning);
+}
+
+.status-card.active.risk .status-text {
+  color: var(--status-danger);
 }
 
 .photo-grid {
@@ -200,7 +217,7 @@ function submit() {
 }
 
 .photo-card {
-  background: #f5f5f5;
+  background: var(--bg-softer);
 }
 
 .photo-img {
@@ -223,8 +240,8 @@ function submit() {
 }
 
 .photo-upload {
-  border: 1px dashed #d4d4d4;
-  background: #fafafa;
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -234,27 +251,27 @@ function submit() {
 
 .photo-icon {
   font-size: 40rpx;
-  color: #a3a3a3;
 }
 
 .photo-text {
   font-size: 22rpx;
-  color: #a3a3a3;
+  color: var(--text-quaternary);
 }
 
 .text-area {
   width: 100%;
   min-height: 176rpx;
   border-radius: 20rpx;
-  background: #fafafa;
+  background: var(--bg-softer);
   padding: 24rpx;
   box-sizing: border-box;
   font-size: 28rpx;
   line-height: 40rpx;
+  color: var(--text-primary);
 }
 
 .sheet-footer {
   padding: 24rpx 32rpx 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-subtle);
 }
 </style>

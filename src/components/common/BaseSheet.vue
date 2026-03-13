@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import AppIcon from '@/components/common/app-icon.vue'
+import { useTheme } from '@/services/platform/theme'
+
 defineProps<{
   visible: boolean
   title?: string
@@ -9,6 +12,8 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
+
+const { isDark } = useTheme()
 </script>
 
 <template>
@@ -22,7 +27,7 @@ const emit = defineEmits<{
           <text v-if="subtitle" class="sheet-subtitle">{{ subtitle }}</text>
         </view>
         <view class="icon-btn" @tap="emit('close')">
-          <text class="app-icon ri-close-line" />
+          <AppIcon name="ri-close-line" :color="isDark ? '#a3a3a3' : '#5c5c5c'" />
         </view>
       </view>
       <slot />
@@ -37,6 +42,8 @@ const emit = defineEmits<{
   align-items: flex-start;
   justify-content: space-between;
   gap: 24rpx;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 24rpx;
 }
 
 .sheet-header-copy {
@@ -47,9 +54,9 @@ const emit = defineEmits<{
 .sheet-title {
   display: block;
   font-size: 32rpx;
-  line-height: 48rpx;
+  line-height: 44rpx;
   font-weight: 600;
-  color: #171717;
+  color: var(--text-primary);
 }
 
 .sheet-subtitle {
@@ -57,6 +64,6 @@ const emit = defineEmits<{
   margin-top: 6rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 </style>
