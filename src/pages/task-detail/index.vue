@@ -2,12 +2,14 @@
 import { computed, ref, watch } from 'vue'
 import { onLoad, onPageScroll } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
+import BaseSheet from '@/components/common/BaseSheet.vue'
 import InspectionEditorSheet from '@/components/task/InspectionEditorSheet.vue'
 import TaskReportSheet from '@/components/task/TaskReportSheet.vue'
 import { fetchTaskDetail } from '@/shared/api/task'
 import type { Building, CheckItem, InspectionCategory, TaskDetail } from '@/shared/types/task'
 import { daysFromToday, formatCompletedAt, parseMonthDay } from '@/shared/utils/date'
 import { makePhoneCall, openLocation } from '@/services/platform/device'
+import { previewImages } from '@/services/platform/media'
 import { usePageNavVars } from '@/services/platform/layout'
 import { goBack, goInspectionHome } from '@/services/platform/navigation'
 import { useTheme } from '@/services/platform/theme'
@@ -22,6 +24,8 @@ const selectedBuildingIndex = ref(0)
 const activeItem = ref<CheckItem | null>(null)
 const editorVisible = ref(false)
 const reportVisible = ref(false)
+const detailItemVisible = ref(false)
+const detailItemCategoryName = ref('')
 const navScrolled = ref(false)
 const navBarVars = usePageNavVars()
 const { isDark } = useTheme()
@@ -84,6 +88,35 @@ const statusIconColor = computed(() => {
   if (task.value.status === 'pending') return '#fa7319'
   if (task.value.status === 'completed') return '#1fc16b'
   return isDark.value ? '#e5e5e5' : '#171717'
+})
+
+const detailItemSubtitle = computed(() => {
+  const parts = [currentBuilding.value?.name, detailItemCategoryName.value].filter(Boolean)
+  return parts.join(' · ')
+})
+
+const detailItemStatusText = computed(() => {
+  if (!activeItem.value) return ''
+  if (activeItem.value.status === 'normal') return '一切正常'
+  if (activeItem.value.status === 'focus') return '需重点关注'
+  if (activeItem.value.status === 'risk') return '存在风险'
+  return '未检查'
+})
+
+const detailItemStatusIcon = computed(() => {
+  if (!activeItem.value) return 'ri-checkbox-blank-circle-line'
+  if (activeItem.value.status === 'normal') return 'ri-checkbox-circle-fill'
+  if (activeItem.value.status === 'focus') return 'ri-alert-line'
+  if (activeItem.value.status === 'risk') return 'ri-error-warning-fill'
+  return 'ri-checkbox-blank-circle-line'
+})
+
+const detailItemStatusColor = computed(() => {
+  if (!activeItem.value) return '#a3a3a3'
+  if (activeItem.value.status === 'normal') return '#1fc16b'
+  if (activeItem.value.status === 'focus') return '#fa7319'
+  if (activeItem.value.status === 'risk') return '#e5484d'
+  return '#a3a3a3'
 })
 
 const deadlineDisplayText = computed(() => {
@@ -217,9 +250,13 @@ function toggleCategory(category: InspectionCategory) {
   expandedCategoryIds.value = [...expandedCategoryIds.value, category.id]
 }
 
-function openEditor(item: CheckItem) {
+function openEditor(item: CheckItem, category?: InspectionCategory) {
   if (task.value?.status === 'completed') {
-    reportVisible.value = true
+    activeItem.value = item
+    detailItemCategoryName.value = category?.name ?? ''
+    setTimeout(() => {
+      detailItemVisible.value = true
+    }, 0)
     return
   }
   activeItem.value = item
@@ -449,19 +486,21 @@ onPageScroll((event) => {
                 v-for="item in category.items"
                 :key="item.id"
                 class="item-row"
-                @tap="openEditor(item)"
+                @tap="openEditor(item, category)"
               >
                 <view class="item-state-mark">
                   <view v-if="item.status === 'normal'" class="item-state-badge item-state-badge--normal">
                     <view class="item-state-check" />
                   </view>
                   <AppIcon
-                    v-else-if="item.status !== 'unchecked'"
-                    :name="itemStatusIcon(item.status)"
-                    class="item-state-icon"
-                    :class="itemStatusClass(item.status)"
-                    :color="item.status === 'focus' ? '#fa7319' : '#e5484d'"
+                    v-else-if="item.status === 'focus'"
+                    name="ri-alert-line"
+                    class="item-state-svg item-state-svg--focus"
+                    color="#fa7319"
                   />
+                  <view v-else-if="item.status === 'risk'" class="item-state-badge item-state-badge--risk">
+                    <view class="item-state-risk-mark" />
+                  </view>
                   <view v-else class="item-state-ring" />
                 </view>
                 <view class="item-copy">
@@ -504,6 +543,58 @@ onPageScroll((event) => {
       @close="editorVisible = false"
       @save="saveInspection"
     />
+    <BaseSheet
+      :visible="detailItemVisible"
+      :title="activeItem?.name || '巡检项结果'"
+      :subtitle="detailItemSubtitle || undefined"
+      max-height="88vh"
+      @close="detailItemVisible = false"
+    >
+      <scroll-view scroll-y class="detail-item-scroll">
+        <view v-if="activeItem?.status !== 'unchecked'" class="detail-item-section">
+          <text class="detail-item-label">情况状态</text>
+          <view class="detail-item-status-row">
+            <AppIcon :name="detailItemStatusIcon" class="detail-item-status-icon" :color="detailItemStatusColor" />
+            <text class="detail-item-status-text" :style="{ color: detailItemStatusColor }">
+              {{ detailItemStatusText }}
+            </text>
+          </view>
+        </view>
+
+        <view class="detail-item-section">
+          <text class="detail-item-label">现场照片</text>
+          <view v-if="activeItem?.photos?.length" class="detail-item-photo-grid">
+            <image
+              v-for="photo in activeItem.photos"
+              :key="photo"
+              class="detail-item-photo"
+              :src="photo"
+              mode="aspectFill"
+              @tap="previewImages(activeItem.photos || [], photo)"
+            />
+          </view>
+          <view v-else class="detail-item-empty">
+            <text class="detail-item-empty-text">暂无现场照片</text>
+          </view>
+        </view>
+
+        <view class="detail-item-section">
+          <text class="detail-item-label">问题描述</text>
+          <view class="detail-item-text-card">
+            <text v-if="activeItem?.description" class="detail-item-text">{{ activeItem.description }}</text>
+            <text v-else class="detail-item-empty-text">未填写问题描述</text>
+          </view>
+        </view>
+
+        <view class="detail-item-section">
+          <text class="detail-item-label">影响评估</text>
+          <view class="detail-item-text-card">
+            <text v-if="activeItem?.impact" class="detail-item-text">{{ activeItem.impact }}</text>
+            <text v-else class="detail-item-empty-text">未填写影响评估</text>
+          </view>
+        </view>
+      </scroll-view>
+    </BaseSheet>
     <TaskReportSheet :visible="reportVisible" :task="task" @close="reportVisible = false" />
   </view>
 </template>
@@ -869,6 +960,10 @@ onPageScroll((event) => {
   background: var(--status-success);
 }
 
+.item-state-badge--risk {
+  background: var(--status-danger);
+}
+
 .item-state-check {
   width: 9px;
   height: 5px;
@@ -878,9 +973,36 @@ onPageScroll((event) => {
   transform: rotate(-45deg) translateY(-0.5px);
 }
 
-.item-state-icon {
-  width: 20px;
-  height: 20px;
+.item-state-svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  display: block;
+}
+
+.item-state-svg--focus {
+  transform: scale(1.22) translateY(-0.5px);
+}
+
+.item-state-risk-mark {
+  position: relative;
+  width: 2px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  transform: translateY(-0.5px);
+}
+
+.item-state-risk-mark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 2px;
+  height: 2px;
+  margin-left: -1px;
+  border-radius: 999px;
+  background: #ffffff;
 }
 
 .item-state-ring {
@@ -999,12 +1121,90 @@ onPageScroll((event) => {
   width: 18px;
   height: 18px;
   flex: none;
+  display: block;
+  transform: translateY(-2px);
 }
 
 .detail-bottom-btn__text {
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
+}
+
+.detail-item-scroll {
+  max-height: 70vh;
+  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
+  box-sizing: border-box;
+}
+
+.detail-item-section + .detail-item-section {
+  margin-top: 24rpx;
+}
+
+.detail-item-label {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.detail-item-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.detail-item-status-icon {
+  width: 32rpx;
+  height: 32rpx;
+  display: block;
+}
+
+.detail-item-status-text {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  font-weight: 500;
+}
+
+.detail-item-photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.detail-item-photo {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 16rpx;
+  background: var(--bg-softer);
+}
+
+.detail-item-text-card {
+  border-radius: 16rpx;
+  background: var(--bg-softer);
+  padding: 20rpx 24rpx;
+}
+
+.detail-item-text {
+  font-size: 26rpx;
+  line-height: 38rpx;
+  color: var(--text-primary);
+}
+
+.detail-item-empty {
+  border-radius: 16rpx;
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-muted);
+  padding: 32rpx 24rpx;
+  text-align: center;
+}
+
+.detail-item-empty-text {
+  font-size: 24rpx;
+  line-height: 36rpx;
+  color: var(--text-quaternary);
 }
 
 .state-icon {
