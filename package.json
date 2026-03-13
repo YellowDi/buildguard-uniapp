@@ -9,6 +9,7 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:h5": "uni build",
     "build:mp-weixin": "uni build -p mp-weixin",
+    "postbuild:mp-weixin": "node scripts/patch-mp-weixin-json.mjs dist/build/mp-weixin",
     "sync:icons": "node scripts/sync-remix-icons.mjs",
     "typecheck": "vue-tsc --noEmit"
   },

@@ -1,0 +1,76 @@
+page {
+  min-height: 100%;
+  background: #ebebeb;
+  color: #171717;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.app-page {
+  --bg-page: #ebebeb;
+  --bg-card: #ffffff;
+  --bg-card-elevated: #ffffff;
+  --bg-soft: rgba(0, 0, 0, 0.05);
+  --bg-softer: #f5f5f5;
+  --bg-muted: #fafafa;
+  --bg-chip: #f5f5f5;
+  --bg-chip-info: #eef6ff;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --text-primary: #171717;
+  --text-secondary: #5c5c5c;
+  --text-tertiary: #737373;
+  --text-quaternary: #a3a3a3;
+  --border-subtle: #ebebeb;
+  --border-strong: #d4d4d4;
+  --brand-blue: #006adc;
+  --brand-blue-soft: #eef6ff;
+  --status-success: #1fc16b;
+  --status-success-soft: #f0fdf4;
+  --status-warning: #fa7319;
+  --status-warning-soft: #fff7ed;
+  --status-danger: #e5484d;
+  --status-danger-soft: #fef2f2;
+  --card-shadow:
+    0 0 0 1px rgba(23, 23, 23, 0.08),
+    0 1px 1px -0.5px rgba(23, 23, 23, 0.04),
+    0 3px 3px -1.5px rgba(23, 23, 23, 0.04),
+    0 6px 6px -3px rgba(23, 23, 23, 0.04),
+    0 10px 10px -5px rgba(23, 23, 23, 0.04),
+    0 20px 20px -10px rgba(23, 23, 23, 0.04),
+    inset 0 -1px 1px -0.5px rgba(23, 23, 23, 0.06);
+  min-height: 100vh;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.theme-dark.app-page {
+  --bg-page: #171717;
+  --bg-card: #262626;
+  --bg-card-elevated: #262626;
+  --bg-soft: rgba(255, 255, 255, 0.06);
+  --bg-softer: #404040;
+  --bg-muted: #1f1f1f;
+  --bg-chip: #404040;
+  --bg-chip-info: #0e2847;
+  --bg-overlay: rgba(0, 0, 0, 0.48);
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --text-quaternary: #737373;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-strong: #525252;
+  --brand-blue: #7db9ff;
+  --brand-blue-soft: #0e2847;
+  --status-success-soft: rgba(31, 193, 107, 0.14);
+  --status-warning-soft: rgba(250, 115, 25, 0.14);
+  --status-danger-soft: rgba(229, 72, 77, 0.14);
+  --card-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 1px 1px -0.5px rgba(0, 0, 0, 0.2),
+    0 3px 3px -1.5px rgba(0, 0, 0, 0.18),
+    0 6px 6px -3px rgba(0, 0, 0, 0.16),
+    0 10px 10px -5px rgba(0, 0, 0, 0.14),
+    0 20px 20px -10px rgba(0, 0, 0, 0.12),
+    inset 0 -1px 1px -0.5px rgba(255, 255, 255, 0.04);
+  background: var(--bg-page);
+  color: var(--text-primary);
+}

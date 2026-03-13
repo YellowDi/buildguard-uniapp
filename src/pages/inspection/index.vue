@@ -3,10 +3,11 @@ import { computed, getCurrentInstance, nextTick, ref } from 'vue'
 import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
+import PageStateCard from '@/components/common/page-state-card.vue'
 import UserCardMenu from '@/components/common/UserCardMenu.vue'
 import { getStoredSession, clearSession } from '@/shared/auth/session'
-import { fetchTaskList } from '@/shared/api/task'
-import type { TaskSection } from '@/shared/types/task'
+import { fetchTaskList } from '@/shared/api/inspection'
+import type { TaskSection } from '@/shared/types/inspection'
 import { goLogin, goTaskDetail } from '@/services/platform/navigation'
 import { usePageNavVars } from '@/services/platform/layout'
 import { useTheme } from '@/services/platform/theme'
@@ -21,7 +22,7 @@ const recordHeadStuck = ref(false)
 const filterPopoverRendered = ref(false)
 const filterPopoverActive = ref(false)
 const currentUserName = ref('张检修')
-const currentUserAvatar = ref('/static/avatar-inspector-default.png')
+const currentUserAvatar = ref('/static/avatar-inspector-default.webp')
 const isEmptyDemo = ref(false)
 const { isDark } = useTheme()
 const navBarVars = usePageNavVars()
@@ -60,7 +61,7 @@ async function loadTasks() {
   try {
     const session = getStoredSession()
     currentUserName.value = session?.displayName || '张检修'
-    currentUserAvatar.value = session?.avatarUrl || '/static/avatar-inspector-default.png'
+    currentUserAvatar.value = session?.avatarUrl || '/static/avatar-inspector-default.webp'
     isEmptyDemo.value = session?.demoMode === 'empty'
     if (!session || session.role !== 'inspector') {
       goLogin()
@@ -181,7 +182,7 @@ onPageScroll((event) => {
       <view class="home-nav__inner">
         <view class="home-nav__main">
           <view class="home-nav__brand">
-            <image class="home-nav__logo" src="/static/temp_logo.png" mode="aspectFit" />
+            <image class="home-nav__logo" src="/static/temp_logo.webp" mode="aspectFit" />
             <text class="home-nav__brand-text">BuildGuard</text>
           </view>
         </view>
@@ -201,16 +202,22 @@ onPageScroll((event) => {
           />
         </view>
 
-        <view v-if="loading" class="state-card">
-          <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
-          <text class="text-muted">正在加载任务列表…</text>
-        </view>
+        <PageStateCard
+          v-if="loading"
+          icon-name="ri-loader-4-line"
+          icon-color="#5c5c5c"
+          description="正在加载任务列表…"
+          spinning-icon
+        />
 
-        <view v-else-if="errorMessage" class="state-card">
-          <AppIcon name="ri-error-warning-line" class="state-icon error" color="#e5484d" />
-          <text class="text-muted">{{ errorMessage }}</text>
-          <view class="btn btn-primary retry-btn" @tap="loadTasks">重试</view>
-        </view>
+        <PageStateCard
+          v-else-if="errorMessage"
+          icon-name="ri-error-warning-line"
+          icon-color="#e5484d"
+          :description="errorMessage"
+          action-text="重试"
+          @action="loadTasks"
+        />
 
         <template v-else-if="sections.length === 0">
           <view class="card intro-card">
@@ -222,17 +229,16 @@ onPageScroll((event) => {
                 : '当前暂无可处理的检修任务，后续接入新任务后会在这里展示待处理、进行中和已完成数据。' }}
             </text>
           </view>
-          <view class="card empty-card">
-            <view class="empty-icon-wrap">
-              <AppIcon name="ri-survey-line" class="empty-icon" :color="isDark ? '#a3a3a3' : '#5c5c5c'" />
-            </view>
-            <text class="empty-title">暂无检修任务</text>
-            <text class="empty-copy">
-              {{ isEmptyDemo
-                ? '这是检修身份的空状态演示账号。后续如果接入新的检修任务数据，这里会替换为真实任务列表与处理入口。'
-                : '当前没有检修任务需要处理。你可以稍后刷新，或切换到其他演示账号查看已有任务数据。' }}
-            </text>
-          </view>
+          <PageStateCard
+            surface
+            icon-surface
+            icon-name="ri-survey-line"
+            :icon-color="isDark ? '#a3a3a3' : '#5c5c5c'"
+            title="暂无检修任务"
+            :description="isEmptyDemo
+              ? '这是检修身份的空状态演示账号。后续如果接入新的检修任务数据，这里会替换为真实任务列表与处理入口。'
+              : '当前没有检修任务需要处理。你可以稍后刷新，或切换到其他演示账号查看已有任务数据。'"
+          />
         </template>
 
         <template v-else>
@@ -419,34 +425,12 @@ onPageScroll((event) => {
   padding: 12rpx 0;
 }
 
-.state-card,
-.empty-card {
-  min-height: 380rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
-}
-
-.intro-card,
-.empty-card {
+.intro-card {
   padding: 24rpx;
   margin-top: 16rpx;
 }
 
-.empty-icon-wrap {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 32rpx;
-  background: var(--bg-softer);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.intro-title,
-.empty-title {
+.intro-title {
   display: block;
   margin-top: 16rpx;
   font-size: 36rpx;
@@ -454,32 +438,12 @@ onPageScroll((event) => {
   color: var(--text-primary);
 }
 
-.intro-copy,
-.empty-copy {
+.intro-copy {
   display: block;
   margin-top: 12rpx;
   font-size: 24rpx;
   line-height: 36rpx;
   color: var(--text-secondary);
-}
-
-.empty-copy {
-  max-width: 480rpx;
-  text-align: center;
-}
-
-.empty-icon,
-.state-icon {
-  font-size: 56rpx;
-  color: var(--text-quaternary);
-}
-
-.state-icon.error {
-  color: #e5484d;
-}
-
-.retry-btn {
-  width: 180rpx;
 }
 
 .task-card {
@@ -715,12 +679,4 @@ onPageScroll((event) => {
   max-height: 60vh;
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 </style>

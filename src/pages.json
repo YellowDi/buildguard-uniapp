@@ -1,4 +1,5 @@
 {
+  "lazyCodeLoading": "requiredComponents",
   "pages": [
     {
       "path": "pages/login/index",
@@ -9,25 +10,40 @@
     {
       "path": "pages/inspection/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "componentPlaceholder": {
+          "base-sheet": "view"
+        }
       }
     },
     {
       "path": "pages/task-detail/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "componentPlaceholder": {
+          "base-sheet": "view",
+          "inspection-editor-sheet": "view",
+          "task-report-sheet": "view"
+        }
       }
     },
     {
       "path": "pages/maintenance/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "componentPlaceholder": {
+          "base-sheet": "view"
+        }
       }
     },
     {
       "path": "pages/maintenance-detail/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "componentPlaceholder": {
+          "maintenance-execution-sheet": "view",
+          "maintenance-result-sheet": "view"
+        }
       }
     }
   ],

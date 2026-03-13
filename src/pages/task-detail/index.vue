@@ -3,10 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { onLoad, onPageScroll } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
-import InspectionEditorSheet from '@/components/task/InspectionEditorSheet.vue'
-import TaskReportSheet from '@/components/task/TaskReportSheet.vue'
-import { fetchTaskDetail } from '@/shared/api/task'
-import type { Building, CheckItem, InspectionCategory, TaskDetail } from '@/shared/types/task'
+import PageStateCard from '@/components/common/page-state-card.vue'
+import InspectionEditorSheet from '@/components/inspection/InspectionEditorSheet.vue'
+import TaskReportSheet from '@/components/inspection/TaskReportSheet.vue'
+import { fetchTaskDetail } from '@/shared/api/inspection'
+import type { Building, CheckItem, InspectionCategory, TaskDetail } from '@/shared/types/inspection'
 import { daysFromToday, formatCompletedAt, parseMonthDay } from '@/shared/utils/date'
 import { makePhoneCall, openLocation } from '@/services/platform/device'
 import { previewImages } from '@/services/platform/media'
@@ -395,22 +396,34 @@ onPageScroll((event) => {
       </view>
       <view class="page-nav-spacer" :style="navBarVars" />
       <view class="page-scroll">
-        <view v-if="loading" class="state-card">
-          <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
-          <text class="text-muted">加载中…</text>
-        </view>
+        <PageStateCard
+          v-if="loading"
+          min-height="480rpx"
+          icon-name="ri-loader-4-line"
+          icon-color="#5c5c5c"
+          description="加载中…"
+          spinning-icon
+        />
 
-        <view v-else-if="errorMessage" class="state-card">
-          <AppIcon name="ri-error-warning-line" class="state-icon error" color="#e5484d" />
-          <text class="text-muted">{{ errorMessage }}</text>
-          <view class="btn btn-primary retry-btn" @tap="loadTask(taskId)">重试</view>
-        </view>
+        <PageStateCard
+          v-else-if="errorMessage"
+          min-height="480rpx"
+          icon-name="ri-error-warning-line"
+          icon-color="#e5484d"
+          :description="errorMessage"
+          action-text="重试"
+          @action="loadTask(taskId)"
+        />
 
-        <view v-else-if="notFound" class="state-card">
-          <AppIcon name="ri-file-search-line" class="state-icon" color="#5c5c5c" />
-          <text class="text-muted">任务不存在或已被删除</text>
-          <view class="btn btn-primary retry-btn" @tap="goInspectionHome()">返回工作台</view>
-        </view>
+        <PageStateCard
+          v-else-if="notFound"
+          min-height="480rpx"
+          icon-name="ri-file-search-line"
+          icon-color="#5c5c5c"
+          description="任务不存在或已被删除"
+          action-text="返回工作台"
+          @action="goInspectionHome()"
+        />
 
         <template v-else-if="task">
           <view class="card detail-card">
@@ -620,15 +633,6 @@ onPageScroll((event) => {
   flex: 1;
   padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 88px);
   box-sizing: border-box;
-}
-
-.state-card {
-  min-height: 480rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
 }
 
 .detail-card {
@@ -1223,29 +1227,7 @@ onPageScroll((event) => {
   color: var(--text-quaternary);
 }
 
-.state-icon {
-  font-size: 56rpx;
-  color: var(--text-quaternary);
-}
-
-.state-icon.error {
-  color: #e5484d;
-}
-
-.retry-btn {
-  width: 200rpx;
-}
-
 .detail-divider {
   margin: 16px 0;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 </style>

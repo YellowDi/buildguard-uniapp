@@ -6,10 +6,10 @@
   "versionCode": "100",
   "transformPx": false,
   "mp-weixin": {
-    "appid": "",
+    "appid": "wx5b05935aa69bfc80",
+    "lazyCodeLoading": "requiredComponents",
     "setting": {
       "urlCheck": false
     }
   }
 }
-

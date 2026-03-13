@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
-import type { Building, CheckItem, InspectionCategory, TaskDetail } from '@/shared/types/task'
+import type { Building, CheckItem, InspectionCategory, TaskDetail } from '@/shared/types/inspection'
 
 type ViewMode = 'risk' | 'building'
 
