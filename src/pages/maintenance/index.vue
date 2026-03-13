@@ -398,7 +398,7 @@ onPageScroll((event) => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  --page-content-gutter: 32rpx;
+  --page-content-gutter: 16px;
   padding: 0 var(--page-content-gutter) 24rpx;
   box-sizing: border-box;
 }
@@ -589,8 +589,8 @@ onPageScroll((event) => {
 .record-sticky {
   position: sticky;
   position: -webkit-sticky;
-  margin: 0 -32rpx;
-  padding: 0 32rpx;
+  margin: 0 -16px;
+  padding: 0 16px;
   background: transparent;
   z-index: 20;
   transition:
