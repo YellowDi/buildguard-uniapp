@@ -201,6 +201,130 @@ page {
   height: calc(var(--page-nav-height, 44px) + 12px);
 }
 
+.home-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  height: calc(var(--page-nav-height, 44px) + 12px);
+  overflow: hidden;
+  background: var(--bg-page);
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.home-nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--border-subtle);
+  opacity: 0;
+  transform: scaleY(0.5);
+  transform-origin: bottom;
+  transition: opacity 0.18s ease;
+}
+
+.home-nav--scrolled {
+  background: var(--bg-card);
+  box-shadow:
+    0 0 0 1px rgba(23, 23, 23, 0.04),
+    0 6px 18px rgba(23, 23, 23, 0.06);
+}
+
+.theme-dark .home-nav--scrolled {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 22px rgba(0, 0, 0, 0.22);
+}
+
+.home-nav--scrolled::after {
+  opacity: 1;
+}
+
+.home-nav__inner {
+  position: relative;
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.home-nav__main {
+  position: absolute;
+  top: var(--page-nav-row-offset, 6px);
+  left: var(--page-content-gutter, 32rpx);
+  right: var(--page-content-gutter, 32rpx);
+  height: var(--page-nav-row-height, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14rpx;
+}
+
+.home-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.home-nav__logo {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  flex: none;
+}
+
+.home-nav__brand-text {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateX(-14rpx);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+
+.home-nav--scrolled .home-nav__brand-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.home-nav-spacer {
+  height: calc(var(--page-nav-height, 44px) + 12px);
+  flex: none;
+}
+
+.home-nav .menu-trigger {
+  padding: 8rpx 12rpx;
+  border-radius: 18rpx;
+  gap: 12rpx;
+}
+
+.home-nav .avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 12rpx;
+}
+
+.home-nav .trigger-name {
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
+.home-nav .trigger-count {
+  font-size: 20rpx;
+  line-height: 28rpx;
+}
+
+.home-nav .menu-block {
+  min-width: 216rpx;
+}
+
 .safe-bottom {
   padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
 }
