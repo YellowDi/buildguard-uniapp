@@ -36,8 +36,15 @@ function togglePopover() {
 
 function onLogout() {
   showPopover.value = false
+  localStorage.removeItem('buildguard-user')
   emit('logout')
-  router.push('/login')
+  router.replace('/login')
+}
+
+function onSwitchIdentity() {
+  showPopover.value = false
+  localStorage.removeItem('buildguard-user')
+  router.replace('/login')
 }
 
 function onClickOutside(e: MouseEvent) {
@@ -101,6 +108,14 @@ onBeforeUnmount(() => {
             class="text-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]"
           />
           {{ isDark ? '关闭暗色模式' : '暗色模式' }}
+        </button>
+        <button
+          type="button"
+          class="flex w-full items-center gap-2 px-4 py-3 text-left text-[13px] text-[#171717] transition-colors active:bg-black/5 dark:text-[#E5E5E5] dark:active:bg-white/10"
+          @click="onSwitchIdentity"
+        >
+          <i class="ri-user-shared-line text-[16px] text-[#5C5C5C] dark:text-[#A3A3A3]" />
+          切换身份（临时）
         </button>
         <button
           type="button"

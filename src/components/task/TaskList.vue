@@ -16,6 +16,7 @@ const activeSection = computed(() => sections.value.find(s => s.key === 'active'
 const pendingSection = computed(() => sections.value.find(s => s.key === 'pending'))
 const completedSection = computed(() => sections.value.find(s => s.key === 'completed'))
 const completedCount = computed(() => completedSection.value?.tasks.length ?? 0)
+const currentUserName = ref('黄某某')
 
 const scrollEl = ref<HTMLElement | null>(null)
 const sentinel = ref<HTMLElement | null>(null)
@@ -114,6 +115,7 @@ async function loadTaskList() {
 }
 
 onMounted(async () => {
+  currentUserName.value = localStorage.getItem('buildguard-user')?.trim() || '黄某某'
   document.addEventListener('click', onClickOutside, true)
   await loadTaskList()
 })
@@ -135,14 +137,15 @@ onBeforeUnmount(() => {
       <!-- 顶部：左侧 logo 位，右侧用户卡片 -->
       <div class="flex items-center justify-between px-4 pt-3">
         <div class="min-w-0 flex-1 flex items-center gap-2">
-          <!-- Logo 占位：正方形渐变块，后续可替换为正式 logo 图片 -->
-          <div
-            class="h-10 w-10 flex-shrink-0 rounded-lg bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 shadow-sm"
+          <img
+            src="/temp_logo.png"
+            alt="BuildGuard logo"
+            class="h-10 w-10 flex-shrink-0 rounded-lg object-contain shadow-sm"
             title="BuildGuard"
           />
           <span class="text-base font-semibold text-[#171717] dark:text-[#E5E5E5] truncate">BuildGuard</span>
         </div>
-        <UserCard name="黄某某" :completed-count="completedCount" />
+        <UserCard :name="currentUserName" :completed-count="completedCount" />
       </div>
 
       <div v-if="loading" class="flex flex-1 flex-col items-center justify-center px-4 py-10">

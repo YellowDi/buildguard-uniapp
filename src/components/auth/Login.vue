@@ -41,8 +41,10 @@ async function onSubmit() {
     <div class="flex flex-1 flex-col items-center justify-center px-6 py-12">
       <!-- Logo 与标题 -->
       <div class="mb-10 flex flex-col items-center gap-4">
-        <div
-          class="h-14 w-14 flex-shrink-0 rounded-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 shadow-md"
+        <img
+          src="/temp_logo.png"
+          alt="BuildGuard logo"
+          class="h-14 w-14 flex-shrink-0 rounded-xl object-contain shadow-md"
           title="BuildGuard"
         />
         <div class="text-center">
