@@ -1,0 +1,15 @@
+{
+  "name": "BuildGuard",
+  "appid": "__UNI__BUILDGUARD",
+  "description": "BuildGuard uni-app 微信小程序版本",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false
+    }
+  }
+}
+

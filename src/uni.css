@@ -1,0 +1,165 @@
+@import './static/remixicon/remixicon.css';
+
+page {
+  min-height: 100%;
+  background: #ebebeb;
+  color: #171717;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.theme-dark page,
+.theme-dark {
+  color: #e5e5e5;
+}
+
+.app-page {
+  min-height: 100vh;
+  background: #ebebeb;
+}
+
+.theme-dark.app-page {
+  background: #171717;
+}
+
+.shell {
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.safe-top {
+  padding-top: calc(var(--status-bar-height) + 12px);
+}
+
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow:
+    0 0 0 1px rgba(23, 23, 23, 0.08),
+    0 2px 2px rgba(23, 23, 23, 0.04),
+    0 12px 24px rgba(23, 23, 23, 0.06);
+}
+
+.theme-dark .card {
+  background: #262626;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 2px 2px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.btn {
+  height: 88rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-primary {
+  background: #171717;
+  color: #ffffff;
+}
+
+.theme-dark .btn-primary {
+  background: #e5e5e5;
+  color: #171717;
+}
+
+.btn-secondary {
+  background: rgba(0, 0, 0, 0.06);
+  color: #5c5c5c;
+}
+
+.theme-dark .btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #a3a3a3;
+}
+
+.chip {
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: #f5f5f5;
+  font-size: 22rpx;
+  color: #5c5c5c;
+}
+
+.theme-dark .chip {
+  background: #404040;
+  color: #a3a3a3;
+}
+
+.text-muted {
+  color: #5c5c5c;
+}
+
+.theme-dark .text-muted {
+  color: #a3a3a3;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.sheet-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 60;
+}
+
+.sheet-panel {
+  width: 100%;
+  max-width: 430px;
+  border-radius: 32rpx 32rpx 0 0;
+  background: #ffffff;
+  padding-top: 12rpx;
+}
+
+.theme-dark .sheet-panel {
+  background: #262626;
+}
+
+.sheet-handle {
+  width: 72rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: #d4d4d4;
+  margin: 0 auto 12rpx;
+}
+
+.theme-dark .sheet-handle {
+  background: #525252;
+}
+
+.icon-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 999rpx;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-dark .icon-btn {
+  background: #404040;
+}
+
+.app-icon {
+  font-family: remixicon !important;
+  font-style: normal;
+}
