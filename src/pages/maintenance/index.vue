@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, getCurrentInstance, nextTick, ref } from 'vue'
 import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
@@ -17,6 +17,7 @@ const errorMessage = ref('')
 const selectedPark = ref<string | null>(null)
 const showPlannedSheet = ref(false)
 const navScrolled = ref(false)
+const recordHeadStuck = ref(false)
 const filterPopoverRendered = ref(false)
 const filterPopoverActive = ref(false)
 const currentUserName = ref('李电工')
@@ -25,7 +26,9 @@ const currentTradeLabel = ref('电工')
 const currentTrade = ref<'electric' | 'plumbing'>('electric')
 const { isDark } = useTheme()
 const navBarVars = usePageNavVars()
+const instance = getCurrentInstance()
 let filterPopoverTimer: ReturnType<typeof setTimeout> | null = null
+let recordHeadThreshold = Number.POSITIVE_INFINITY
 
 const activeSection = computed(() => sections.value.find((section) => section.key === 'active'))
 const pendingSection = computed(() => sections.value.find((section) => section.key === 'pending'))
@@ -36,6 +39,12 @@ const plannedTasks = computed(() => [...(activeSection.value?.tasks ?? []), ...(
 const filteredCompletedTasks = computed(() => {
   const tasks = completedSection.value?.tasks ?? []
   return selectedPark.value ? tasks.filter((task) => task.parkName === selectedPark.value) : tasks
+})
+const recordHeadStyle = computed(() => {
+  const navHeight = parseFloat(String(navBarVars['--page-nav-height'] || '44'))
+  return {
+    top: `${navHeight + 12}px`,
+  }
 })
 
 function formatPlanDate(raw: string) {
@@ -65,6 +74,8 @@ function statusIconColor(task: MaintenanceTask) {
 async function loadTasks() {
   loading.value = true
   errorMessage.value = ''
+  recordHeadStuck.value = false
+  recordHeadThreshold = Number.POSITIVE_INFINITY
   try {
     const session = getStoredSession()
     if (!session || session.role !== 'maintainer') {
@@ -82,6 +93,8 @@ async function loadTasks() {
     errorMessage.value = '维修任务加载失败，请稍后重试'
   } finally {
     loading.value = false
+    await nextTick()
+    measureRecordHeadThreshold()
   }
 }
 
@@ -126,6 +139,29 @@ function selectPark(park: string | null) {
   closeFilterPopover()
 }
 
+function measureRecordHeadThreshold() {
+  if (!instance?.proxy || loading.value || errorMessage.value || sections.value.length === 0) {
+    recordHeadThreshold = Number.POSITIVE_INFINITY
+    recordHeadStuck.value = false
+    return
+  }
+
+  const query = uni.createSelectorQuery().in(instance.proxy)
+  query.select('.record-head-anchor').boundingClientRect()
+  query.exec((result) => {
+    const rect = result?.[0] as UniApp.NodeInfo | undefined
+    if (!rect?.top) {
+      recordHeadThreshold = Number.POSITIVE_INFINITY
+      recordHeadStuck.value = false
+      return
+    }
+
+    const navHeight = parseFloat(String(navBarVars['--page-nav-height'] || '44'))
+    const navOffset = 12
+    recordHeadThreshold = Math.max(rect.top - navHeight - navOffset, 0)
+  })
+}
+
 onShow(() => {
   loadTasks()
 })
@@ -135,6 +171,12 @@ onPageScroll((event) => {
     navScrolled.value = false
   } else if (event.scrollTop >= 36) {
     navScrolled.value = true
+  }
+
+  if (!Number.isFinite(recordHeadThreshold)) {
+    measureRecordHeadThreshold()
+  } else {
+    recordHeadStuck.value = event.scrollTop >= recordHeadThreshold
   }
 
   if (filterPopoverRendered.value) {
@@ -256,36 +298,39 @@ onPageScroll((event) => {
             </view>
           </view>
 
-          <view class="record-head">
-            <text class="record-title">维修记录</text>
-            <view class="filter-anchor">
-              <view class="filter-pill" :class="{ active: !!selectedPark }" @tap.stop="toggleFilterPopover">
-                <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
-                <text>{{ selectedPark || '园区筛选' }}</text>
-              </view>
-              <view
-                v-if="filterPopoverRendered"
-                class="filter-popover"
-                :class="{ 'filter-popover--active': filterPopoverActive }"
-                @tap.stop
-              >
-                <view
-                  class="filter-option"
-                  :class="{ active: !selectedPark }"
-                  @tap="selectPark(null)"
-                >
-                  <AppIcon name="ri-checkbox-circle-fill" :color="!selectedPark ? (isDark ? '#e5e5e5' : '#171717') : 'transparent'" />
-                  <text>全部园区</text>
+          <view class="record-head-anchor" />
+          <view class="record-sticky" :class="{ 'record-sticky--stuck': recordHeadStuck }" :style="recordHeadStyle">
+            <view class="record-head">
+              <text class="record-title">维修记录</text>
+              <view class="filter-anchor">
+                <view class="filter-pill" :class="{ active: !!selectedPark }" @tap.stop="toggleFilterPopover">
+                  <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
+                  <text>{{ selectedPark || '筛选' }}</text>
                 </view>
                 <view
-                  v-for="park in parkNames"
-                  :key="park"
-                  class="filter-option"
-                  :class="{ active: selectedPark === park }"
-                  @tap="selectPark(park)"
+                  v-if="filterPopoverRendered"
+                  class="filter-popover"
+                  :class="{ 'filter-popover--active': filterPopoverActive }"
+                  @tap.stop
                 >
-                  <AppIcon name="ri-checkbox-circle-fill" :color="selectedPark === park ? (isDark ? '#e5e5e5' : '#171717') : 'transparent'" />
-                  <text>{{ park }}</text>
+                  <view
+                    class="filter-option"
+                    :class="{ active: !selectedPark }"
+                    @tap="selectPark(null)"
+                  >
+                    <AppIcon name="ri-checkbox-circle-fill" :color="!selectedPark ? (isDark ? '#e5e5e5' : '#171717') : 'transparent'" />
+                    <text>全部园区</text>
+                  </view>
+                  <view
+                    v-for="park in parkNames"
+                    :key="park"
+                    class="filter-option"
+                    :class="{ active: selectedPark === park }"
+                    @tap="selectPark(park)"
+                  >
+                    <AppIcon name="ri-checkbox-circle-fill" :color="selectedPark === park ? (isDark ? '#e5e5e5' : '#171717') : 'transparent'" />
+                    <text>{{ park }}</text>
+                  </view>
                 </view>
               </view>
             </view>
@@ -293,9 +338,10 @@ onPageScroll((event) => {
 
           <view class="record-list">
             <view
-              v-for="task in filteredCompletedTasks"
+              v-for="(task, index) in filteredCompletedTasks"
               :key="task.id"
-              class="card record-card"
+              class="record-card"
+              :class="{ divided: index > 0 }"
               @tap="goMaintenanceDetail(task.id)"
             >
               <view class="task-head">
@@ -308,8 +354,8 @@ onPageScroll((event) => {
                   <text class="task-status-text">{{ statusText(task) }}</text>
                 </view>
               </view>
-              <text class="task-address">{{ task.buildingName }} · {{ task.location }}</text>
             </view>
+            <view v-if="filteredCompletedTasks.length === 0" class="record-empty">当前筛选下暂无维修记录</view>
           </view>
         </template>
       </view>
@@ -468,13 +514,15 @@ onPageScroll((event) => {
 
 .task-card {
   overflow: hidden;
+  padding: 0;
+  margin-top: 0;
 }
 
 .task-item {
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
-  padding: 24rpx 0;
+  gap: 16rpx;
+  padding: 24rpx;
 }
 
 .task-item.divided {
@@ -485,53 +533,79 @@ onPageScroll((event) => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20rpx;
+  gap: 12rpx;
 }
 
 .task-copy {
   flex: 1;
+  min-width: 0;
 }
 
 .task-park {
   display: block;
-  font-size: 30rpx;
-  line-height: 42rpx;
-  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
 .task-name {
   display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  line-height: 36rpx;
+  margin-top: 2rpx;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
 .task-address,
 .task-subtle {
-  font-size: 24rpx;
-  line-height: 36rpx;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
 .task-subtle {
+  margin-top: -2rpx;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--text-tertiary);
-}
-
-.inline-btn {
-  height: 80rpx;
 }
 
 .pending-wrap {
   margin: 0 -24rpx;
   padding: 0 24rpx;
-  background: var(--bg-soft);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .pending-wrap {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .card-foot {
-  padding-top: 24rpx;
+  padding: 24rpx;
   border-top: 1px solid var(--border-subtle);
+}
+
+.record-sticky {
+  position: sticky;
+  position: -webkit-sticky;
+  margin: 0 -32rpx;
+  padding: 0 32rpx;
+  background: transparent;
+  z-index: 20;
+  transition:
+    background-color 0.28s ease,
+    box-shadow 0.28s ease,
+    transform 0.28s ease;
+}
+
+.record-sticky--stuck {
+  background: var(--bg-card);
+  box-shadow: 0 1px 0 rgba(23, 23, 23, 0.06);
+}
+
+.theme-dark .record-sticky--stuck {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .record-head {
@@ -539,12 +613,24 @@ onPageScroll((event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16rpx 0 10rpx;
+  box-sizing: border-box;
+  transition: transform 0.28s ease;
+}
+
+.record-sticky--stuck .record-head {
+  transform: translateY(-2rpx);
 }
 
 .record-title {
-  font-size: 34rpx;
-  font-weight: 700;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
   color: var(--text-secondary);
+}
+
+.record-head-anchor {
+  height: 0;
 }
 
 .filter-popover-backdrop {
@@ -563,16 +649,25 @@ onPageScroll((event) => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  padding: 10rpx 18rpx;
+  padding: 8rpx 12rpx;
   border-radius: 999rpx;
   background: transparent;
-  font-size: 22rpx;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .filter-pill.active {
   background: var(--text-primary);
   color: var(--bg-card);
+}
+
+.filter-pill .app-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  transform: translateY(-1px);
 }
 
 .filter-popover {
@@ -644,8 +739,178 @@ onPageScroll((event) => {
   padding-bottom: 24rpx;
 }
 
+.record-card {
+  min-height: 56px;
+  padding: 16rpx 0;
+  margin-top: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  transition: background-color 0.18s ease;
+}
+
+.record-card.divided {
+  position: relative;
+  border-top: none;
+}
+
+.record-card.divided::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: rgba(23, 23, 23, 0.08);
+  transform: scaleY(0.5);
+  transform-origin: top;
+}
+
+.theme-dark .record-card.divided::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.record-card:active {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.theme-dark .record-card:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.record-card .task-head {
+  align-items: center;
+  gap: 12rpx;
+}
+
+.record-card .task-copy {
+  justify-content: center;
+}
+
+.record-card .task-park {
+  line-height: 24px;
+}
+
+.record-card .task-name {
+  margin-top: 0;
+}
+
+.record-empty {
+  padding: 20rpx 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-quaternary);
+}
+
 .planned-scroll {
   max-height: 60vh;
+}
+
+.timeline-sheet {
+  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 0 0 24rpx;
+}
+
+.timeline-track {
+  position: relative;
+  width: 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: none;
+}
+
+.timeline-dot {
+  width: 18rpx;
+  height: 18rpx;
+  margin-top: 10rpx;
+  border-radius: 999rpx;
+  background: rgba(23, 23, 23, 0.16);
+}
+
+.timeline-dot.active {
+  background: var(--text-primary);
+}
+
+.theme-dark .timeline-dot {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.theme-dark .timeline-dot.active {
+  background: #e5e5e5;
+}
+
+.timeline-line {
+  width: 2rpx;
+  flex: 1;
+  min-height: 110rpx;
+  margin-top: 8rpx;
+  background: rgba(23, 23, 23, 0.08);
+}
+
+.theme-dark .timeline-line {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timeline-copy {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 4rpx;
+}
+
+.timeline-date {
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.timeline-heading {
+  margin-top: 6rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.timeline-title {
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.timeline-subtitle {
+  display: block;
+  margin-top: 2rpx;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.timeline-empty {
+  border-radius: 20rpx;
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-muted);
+  padding: 40rpx 24rpx;
+  text-align: center;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  color: var(--text-quaternary);
 }
 
 .spinner {

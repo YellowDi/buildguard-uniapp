@@ -531,14 +531,6 @@ onPageScroll((event) => {
   color: var(--text-secondary);
 }
 
-.inline-btn {
-  height: 40px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-}
-
 .pending-wrap {
   margin: 0;
   padding: 0;
@@ -553,14 +545,6 @@ onPageScroll((event) => {
 .card-foot {
   padding: 24rpx;
   border-top: 1px solid var(--border-subtle);
-}
-
-.card-foot .btn {
-  height: 40px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
 }
 
 .record-sticky {

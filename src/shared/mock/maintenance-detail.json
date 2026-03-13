@@ -211,6 +211,144 @@
     ],
     "completionSummary": "照明回路已恢复，泵房主要作业面照度达到巡检标准，夜间检修条件正常。"
   },
+  "106": {
+    "id": 106,
+    "parkName": "华南物流枢纽园区",
+    "taskName": "综合楼弱电间UPS旁路开关检修",
+    "buildingName": "综合楼",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "2层弱电间配电柜",
+    "sourceInspectionTask": "2025 年 12 月综合巡检",
+    "sourceFinding": "UPS旁路开关切换手感异常，存在接触不良隐患。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "medium",
+    "completedAt": "2026-02-18",
+    "status": "completed",
+    "contact": "周值班长",
+    "phone": "13800004567",
+    "issueCategory": "UPS配电",
+    "riskLevelLabel": "切换可靠性风险",
+    "dispatchReason": "对UPS旁路开关进行分解检修和接触面处理。",
+    "sourceInspectionItem": "UPS旁路切换开关状态",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "综合楼弱电间UPS旁路开关切换阻尼异常，触点接触面存在氧化痕迹。",
+    "sourceImpact": "若不及时处理，可能影响UPS检修切换可靠性和关键弱电系统供电连续性。",
+    "sourceRemark": "建议安排低峰时段停电检修并复测切换可靠性。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-106-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-106-b/480/320"
+    ],
+    "workOrderNo": "WX-20260218-106",
+    "requiredTools": ["绝缘螺丝刀", "接点清洁剂", "扭力起子"],
+    "requiredMaterials": ["触点润滑脂", "绝缘标签"],
+    "safetyNotes": ["切换前确认UPS负载冗余状态", "检修后需执行空载和带载切换测试"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-106-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-106-b/480/320"
+    ],
+    "executionNote": "已完成旁路开关触点清洁、压接紧固和机构润滑，带载切换测试正常。",
+    "steps": [
+      { "id": 1, "title": "检修前隔离", "description": "确认负载切换窗口并完成停电隔离。", "status": "done" },
+      { "id": 2, "title": "分解检修开关机构", "description": "清洁氧化触点并处理机械阻滞。", "status": "done" },
+      { "id": 3, "title": "切换复测", "description": "完成空载和带载切换验证。", "status": "done" }
+    ],
+    "completionSummary": "UPS旁路开关切换恢复顺畅，接触电阻复测正常，供电切换可靠。"
+  },
+  "107": {
+    "id": 107,
+    "parkName": "长三角新能源产业园",
+    "taskName": "B栋厂房桥架接地跨接补强",
+    "buildingName": "B栋",
+    "address": "浙江省宁波市北仑区科创大道66号",
+    "location": "1层西侧桥架检修口",
+    "sourceInspectionTask": "2025 年 11 月设备维护巡检",
+    "sourceFinding": "桥架跨接线松动，局部接地连续性不足。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "medium",
+    "completedAt": "2026-02-11",
+    "status": "completed",
+    "contact": "王班长",
+    "phone": "13800007890",
+    "issueCategory": "桥架接地",
+    "riskLevelLabel": "接地连续性不足",
+    "dispatchReason": "对松动跨接线进行补强和接地电阻复测。",
+    "sourceInspectionItem": "桥架接地跨接线状态",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "B栋西侧桥架多个跨接点压接松动，局部接地连续性测试值偏高。",
+    "sourceImpact": "可能影响桥架系统故障电流泄放能力和等电位连接效果。",
+    "sourceRemark": "补强后需复测接地连续性并恢复标识。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-107-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-107-b/480/320"
+    ],
+    "workOrderNo": "WX-20260211-107",
+    "requiredTools": ["压线钳", "接地电阻测试仪", "活动扳手"],
+    "requiredMaterials": ["黄绿接地线", "铜鼻子", "防松螺母"],
+    "safetyNotes": ["作业期间注意桥架边缘防割伤", "复测后需恢复桥架盖板"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-107-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-107-b/480/320"
+    ],
+    "executionNote": "已更换老化跨接线并补强压接点，连续性测试恢复至标准范围。",
+    "steps": [
+      { "id": 1, "title": "拆检跨接点", "description": "检查西侧桥架段全部跨接连接点。", "status": "done" },
+      { "id": 2, "title": "更换并补强接地线", "description": "更换老化接地线并加装防松件。", "status": "done" },
+      { "id": 3, "title": "连续性复测", "description": "完成复测并更新桥架维护标识。", "status": "done" }
+    ],
+    "completionSummary": "桥架接地跨接已补强，连续性复测达标，后续运行风险已消除。"
+  },
+  "108": {
+    "id": 108,
+    "parkName": "华东智能制造产业园",
+    "taskName": "C栋空压机房插座回路复位",
+    "buildingName": "C栋",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "空压机房设备维护区",
+    "sourceInspectionTask": "2025 年 10 月消防安全检查",
+    "sourceFinding": "插座回路漏保误动作，维护电源不可用。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "high",
+    "completedAt": "2026-01-30",
+    "status": "completed",
+    "contact": "陈主管",
+    "phone": "13800001234",
+    "issueCategory": "维修电源",
+    "riskLevelLabel": "维护供电中断风险",
+    "dispatchReason": "排查漏保误动作原因并恢复维护电源回路。",
+    "sourceInspectionItem": "空压机房维护插座回路",
+    "sourceStatusLabel": "存在风险",
+    "sourceDescription": "空压机房维护插座回路漏保频繁跳闸，设备保养时临时电源无法稳定使用。",
+    "sourceImpact": "影响维护作业取电，可能导致检修中断和临时接电隐患增加。",
+    "sourceRemark": "需排查回路绝缘状态和末端插座接线情况。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-108-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-108-b/480/320"
+    ],
+    "workOrderNo": "WX-20260130-108",
+    "requiredTools": ["绝缘测试仪", "万用表", "剥线钳"],
+    "requiredMaterials": ["漏保开关", "防水插座"],
+    "safetyNotes": ["检修前确认设备已切至备用维护电源", "更换漏保后执行动作测试"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-108-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-108-b/480/320"
+    ],
+    "executionNote": "已更换误动作漏保并复位插座回路，维护区供电恢复稳定。",
+    "steps": [
+      { "id": 1, "title": "绝缘排查", "description": "测量支路绝缘并检查末端插座接线。", "status": "done" },
+      { "id": 2, "title": "更换漏保与插座", "description": "替换故障漏保并更换受潮插座。", "status": "done" },
+      { "id": 3, "title": "通电测试", "description": "执行动作测试并恢复维护电源。", "status": "done" }
+    ],
+    "completionSummary": "维护插座回路已恢复正常，漏保动作测试通过，空压机房维护供电稳定。"
+  },
   "201": {
     "id": 201,
     "parkName": "长三角新能源产业园",
@@ -337,5 +475,143 @@
       { "id": 3, "title": "复机观察", "description": "空调复机后观察 30 分钟确认无滴漏。", "status": "done" }
     ],
     "completionSummary": "冷凝水排放已恢复正常，吊顶内无继续受潮迹象，保温层已重新恢复。"
+  },
+  "204": {
+    "id": 204,
+    "parkName": "华南物流枢纽园区",
+    "taskName": "2号仓库屋面排水口清掏",
+    "buildingName": "2号仓库",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "屋面西北角排水点",
+    "sourceInspectionTask": "2025 年 11 月设备维护巡检",
+    "sourceFinding": "排水口淤积落叶和泥沙，强降雨时排水受限。",
+    "assignee": "孙水工",
+    "trade": "plumbing",
+    "priority": "low",
+    "completedAt": "2026-02-21",
+    "status": "completed",
+    "contact": "周值班长",
+    "phone": "13800004567",
+    "issueCategory": "屋面排水",
+    "riskLevelLabel": "强降雨排水受限",
+    "dispatchReason": "清掏屋面排水口并复查支管通畅性。",
+    "sourceInspectionItem": "屋面排水口淤积情况",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "2号仓库屋面西北角排水点积叶和泥沙明显，排水截面缩小。",
+    "sourceImpact": "强降雨时可能造成局部积水，增加屋面防水层长期受压风险。",
+    "sourceRemark": "建议同步加装简易防叶网。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-204-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-204-b/480/320"
+    ],
+    "workOrderNo": "WX-20260221-204",
+    "requiredTools": ["清污铲", "高压水枪", "防滑绳"],
+    "requiredMaterials": ["防叶网", "密封胶"],
+    "safetyNotes": ["屋面作业需系安全绳", "雨天禁止上屋面施工"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-204-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-204-b/480/320"
+    ],
+    "executionNote": "已完成排水口清掏并冲洗支管，排水恢复顺畅。",
+    "steps": [
+      { "id": 1, "title": "清理杂物", "description": "移除落叶和泥沙淤积物。", "status": "done" },
+      { "id": 2, "title": "冲洗支管", "description": "高压冲洗排水支管。", "status": "done" },
+      { "id": 3, "title": "恢复防叶措施", "description": "加装防叶网并复查排水。", "status": "done" }
+    ],
+    "completionSummary": "屋面排水口已恢复通畅，支管无堵塞，强降雨排水能力恢复正常。"
+  },
+  "205": {
+    "id": 205,
+    "parkName": "长三角新能源产业园",
+    "taskName": "办公楼茶水间排水存水弯更换",
+    "buildingName": "办公楼",
+    "address": "浙江省宁波市北仑区科创大道66号",
+    "location": "3层西侧茶水间",
+    "sourceInspectionTask": "2025 年 10 月消防安全检查",
+    "sourceFinding": "存水弯老化渗漏，柜体底板受潮。",
+    "assignee": "孙水工",
+    "trade": "plumbing",
+    "priority": "medium",
+    "completedAt": "2026-02-08",
+    "status": "completed",
+    "contact": "王班长",
+    "phone": "13800007890",
+    "issueCategory": "室内排水",
+    "riskLevelLabel": "柜体受潮风险",
+    "dispatchReason": "更换老化存水弯并修复排水密封。",
+    "sourceInspectionItem": "茶水间排水存水弯状态",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "办公楼3层西侧茶水间排水存水弯老化开裂，柜体底板和踢脚线已有受潮痕迹。",
+    "sourceImpact": "持续渗漏可能进一步损伤柜体并引发异味问题。",
+    "sourceRemark": "更换后需补做密封并清理柜体底部积水。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-205-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-205-b/480/320"
+    ],
+    "workOrderNo": "WX-20260208-205",
+    "requiredTools": ["割管器", "活动扳手", "手电"],
+    "requiredMaterials": ["PVC存水弯", "密封圈", "防霉胶"],
+    "safetyNotes": ["施工前需清空柜内物品", "恢复供水后检查柜体底部无残留渗漏"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-205-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-205-b/480/320"
+    ],
+    "executionNote": "已更换存水弯并恢复密封，排水测试正常，柜体底部完成干燥清理。",
+    "steps": [
+      { "id": 1, "title": "拆除老化件", "description": "拆下开裂存水弯并清理接口。", "status": "done" },
+      { "id": 2, "title": "安装新存水弯", "description": "安装新件并补做密封。", "status": "done" },
+      { "id": 3, "title": "排水测试", "description": "进行满流排水测试并确认无渗漏。", "status": "done" }
+    ],
+    "completionSummary": "茶水间排水密封已恢复正常，柜体无继续受潮，异味问题已消除。"
+  },
+  "206": {
+    "id": 206,
+    "parkName": "华东智能制造产业园",
+    "taskName": "E栋消防箱阀门填料压盖调整",
+    "buildingName": "E栋",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "1层北侧消防箱",
+    "sourceInspectionTask": "2025 年 12 月综合巡检",
+    "sourceFinding": "阀门压盖处轻微渗水，需调整并更换填料。",
+    "assignee": "孙水工",
+    "trade": "plumbing",
+    "priority": "medium",
+    "completedAt": "2026-01-27",
+    "status": "completed",
+    "contact": "陈主管",
+    "phone": "13800001234",
+    "issueCategory": "消防给水",
+    "riskLevelLabel": "阀门渗水风险",
+    "dispatchReason": "调整压盖并更换填料，消除消防箱阀门渗水。",
+    "sourceInspectionItem": "消防箱阀门密封状态",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "E栋1层北侧消防箱阀门压盖处存在轻微渗水，阀门手轮操作偏紧。",
+    "sourceImpact": "长期渗水可能影响消防箱内部金属件锈蚀和阀门可靠性。",
+    "sourceRemark": "调整后需做静压观察并复查箱内干燥情况。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-206-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-206-b/480/320"
+    ],
+    "workOrderNo": "WX-20260127-206",
+    "requiredTools": ["填料钩", "活动扳手", "检漏纸"],
+    "requiredMaterials": ["阀门填料", "防锈喷剂"],
+    "safetyNotes": ["作业期间确认消防箱所在分区值守正常", "完成后需保持箱内干燥"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-206-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-206-b/480/320"
+    ],
+    "executionNote": "已更换阀门填料并调整压盖，静压观察无继续渗水，箱内已完成除湿防锈处理。",
+    "steps": [
+      { "id": 1, "title": "拆检压盖", "description": "拆开压盖并清理老化填料。", "status": "done" },
+      { "id": 2, "title": "更换填料调整压盖", "description": "填充新填料并完成压盖调整。", "status": "done" },
+      { "id": 3, "title": "静压复查", "description": "观察阀门静压状态并确认无渗水。", "status": "done" }
+    ],
+    "completionSummary": "消防箱阀门渗水问题已消除，压盖和手轮动作恢复正常。"
   }
 }
