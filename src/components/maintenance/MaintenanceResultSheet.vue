@@ -69,7 +69,7 @@ const emit = defineEmits<{
       </view>
     </scroll-view>
 
-    <view class="sheet-footer safe-bottom">
+    <view class="sheet-footer">
       <view v-if="confirmable" class="btn btn-primary" @tap="emit('confirm')">确认生成维修报告</view>
       <view v-else class="btn btn-secondary" @tap="emit('close')">关闭</view>
     </view>
@@ -80,6 +80,7 @@ const emit = defineEmits<{
 .report-scroll {
   max-height: 62vh;
   padding: 0 32rpx 24rpx;
+  box-sizing: border-box;
 }
 
 .block + .block {
@@ -121,7 +122,9 @@ const emit = defineEmits<{
 }
 
 .sheet-footer {
-  padding: 24rpx 32rpx 0;
+  padding: 24rpx 32rpx calc(env(safe-area-inset-bottom, 0px) + 12px);
   border-top: 1px solid var(--border-subtle);
+  background: var(--bg-card-elevated);
+  box-sizing: border-box;
 }
 </style>
