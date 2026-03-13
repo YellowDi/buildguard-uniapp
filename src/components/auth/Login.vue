@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { DEMO_USERS, authenticateDemoUser, resolveHomePath, saveSession, type DemoUser } from '../../auth/session'
 
 const router = useRouter()
 
@@ -18,19 +19,26 @@ async function onSubmit() {
   error.value = ''
   loading.value = true
   try {
-    // 占位：后续接入真实登录 API
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    if (username.value && password.value) {
-      localStorage.setItem('buildguard-user', username.value.trim())
-      router.replace('/')
-    } else {
-      error.value = '请输入用户名和密码'
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    const user = authenticateDemoUser(username.value, password.value)
+    if (!user) {
+      error.value = '账号或密码错误，请使用下方测试账号或快捷登录。'
+      return
     }
+    saveSession(user)
+    router.replace(resolveHomePath(user.role))
   } catch {
     error.value = '登录失败，请稍后重试'
   } finally {
     loading.value = false
   }
+}
+
+function onQuickLogin(user: DemoUser) {
+  if (loading.value) return
+  error.value = ''
+  saveSession(user)
+  router.replace(resolveHomePath(user.role))
 }
 </script>
 
@@ -127,6 +135,52 @@ async function onSubmit() {
             <span>{{ loading ? '登录中…' : '登录' }}</span>
           </button>
         </form>
+
+        <div class="mt-4 rounded-xl border border-dashed border-[#D4D4D4] bg-[#FAFAFA] p-3 dark:border-white/10 dark:bg-[#1F1F1F]">
+          <div>
+            <div>
+              <p class="text-[13px] font-medium text-[#171717] dark:text-[#E5E5E5]">快捷登录</p>
+              <p class="mt-1 text-[12px] leading-[18px] text-[#5C5C5C] dark:text-[#A3A3A3]">
+                临时测试入口。检修身份可查看当前数据；维修身份仅进入空状态工作台。
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-2">
+            <button
+              v-for="user in DEMO_USERS"
+              :key="user.id"
+              type="button"
+              class="flex w-full items-start justify-between rounded-xl border border-[#EBEBEB] bg-white px-3 py-3 text-left transition-colors active:bg-black/[0.03] dark:border-white/10 dark:bg-[#262626] dark:active:bg-white/5"
+              @click="onQuickLogin(user)"
+            >
+              <div class="flex min-w-0 items-start gap-3">
+                <img
+                  :src="user.avatarUrl"
+                  :alt="`${user.displayName} avatar`"
+                  class="h-10 w-10 flex-shrink-0 rounded-lg object-cover"
+                />
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                  <span class="text-[14px] font-medium text-[#171717] dark:text-[#E5E5E5]">
+                    {{ user.displayName }}
+                  </span>
+                  <span class="rounded-full bg-[#F5F5F5] px-2 py-0.5 text-[11px] font-medium text-[#5C5C5C] dark:bg-[#404040] dark:text-[#A3A3A3]">
+                    {{ user.roleLabel }}
+                  </span>
+                  </div>
+                  <p class="mt-1 text-[12px] leading-[18px] text-[#5C5C5C] dark:text-[#A3A3A3]">
+                    {{ user.description }}
+                  </p>
+                  <p class="mt-1 text-[11px] leading-[16px] text-[#737373] dark:text-[#737373]">
+                    账号 {{ user.username }} / 密码 {{ user.password }}
+                  </p>
+                </div>
+              </div>
+              <i class="ri-arrow-right-line mt-0.5 text-[16px] text-[#A3A3A3]" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </section>

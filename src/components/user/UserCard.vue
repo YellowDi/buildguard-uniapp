@@ -2,9 +2,11 @@
 import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDarkMode } from '../../composables/useDarkMode'
+import { clearSession } from '../../auth/session'
 
 defineProps<{
   name: string
+  avatarUrl?: string
   completedCount: number
 }>()
 
@@ -36,14 +38,14 @@ function togglePopover() {
 
 function onLogout() {
   showPopover.value = false
-  localStorage.removeItem('buildguard-user')
+  clearSession()
   emit('logout')
   router.replace('/login')
 }
 
 function onSwitchIdentity() {
   showPopover.value = false
-  localStorage.removeItem('buildguard-user')
+  clearSession()
   router.replace('/login')
 }
 
@@ -79,7 +81,14 @@ onBeforeUnmount(() => {
       :class="showPopover ? 'rounded-t-lg' : 'rounded-lg'"
       @click="togglePopover"
     >
-      <div class="avatar-border h-[40px] w-[40px] shrink-0 rounded-[6px] bg-[#C4C4C4] dark:bg-[#404040]" />
+      <div class="avatar-border h-[40px] w-[40px] shrink-0 overflow-hidden rounded-[6px] bg-[#C4C4C4] dark:bg-[#404040]">
+        <img
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          :alt="`${name} avatar`"
+          class="h-full w-full object-cover"
+        />
+      </div>
       <div class="flex flex-col gap-0.5">
         <span class="text-[13px] font-medium leading-[18px] text-[#171717] dark:text-[#E5E5E5]">{{ name }}</span>
         <span class="text-[11px] leading-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">已完成 {{ completedCount }} 任务</span>

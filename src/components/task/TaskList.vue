@@ -5,6 +5,7 @@ import type { TaskSection } from '../../types/task'
 import { fetchTaskList } from '../../api/task'
 import UserCard from '../user/UserCard.vue'
 import PlannedTaskDrawer from './PlannedTaskDrawer.vue'
+import { getStoredSession } from '../../auth/session'
 
 const router = useRouter()
 
@@ -16,7 +17,9 @@ const activeSection = computed(() => sections.value.find(s => s.key === 'active'
 const pendingSection = computed(() => sections.value.find(s => s.key === 'pending'))
 const completedSection = computed(() => sections.value.find(s => s.key === 'completed'))
 const completedCount = computed(() => completedSection.value?.tasks.length ?? 0)
-const currentUserName = ref('黄某某')
+const currentUserName = ref('张检修')
+const currentUserAvatar = ref('/avatar-inspector-default.png')
+const isEmptyDemo = ref(false)
 
 const scrollEl = ref<HTMLElement | null>(null)
 const sentinel = ref<HTMLElement | null>(null)
@@ -102,6 +105,11 @@ async function loadTaskList() {
   showParkFilter.value = false
 
   try {
+    const session = getStoredSession()
+    if (session?.demoMode === 'empty') {
+      sections.value = []
+      return
+    }
     const data = await fetchTaskList()
     sections.value = data.sections
   } catch {
@@ -115,7 +123,10 @@ async function loadTaskList() {
 }
 
 onMounted(async () => {
-  currentUserName.value = localStorage.getItem('buildguard-user')?.trim() || '黄某某'
+  const session = getStoredSession()
+  currentUserName.value = session?.displayName || '张检修'
+  currentUserAvatar.value = session?.avatarUrl || '/avatar-inspector-default.png'
+  isEmptyDemo.value = session?.demoMode === 'empty'
   document.addEventListener('click', onClickOutside, true)
   await loadTaskList()
 })
@@ -145,7 +156,7 @@ onBeforeUnmount(() => {
           />
           <span class="text-base font-semibold text-[#171717] dark:text-[#E5E5E5] truncate">BuildGuard</span>
         </div>
-        <UserCard :name="currentUserName" :completed-count="completedCount" />
+        <UserCard :name="currentUserName" :avatar-url="currentUserAvatar" :completed-count="completedCount" />
       </div>
 
       <div v-if="loading" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
@@ -165,9 +176,36 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <div v-else-if="sections.length === 0" class="flex flex-1 flex-col items-center justify-center px-4 py-10">
-        <i class="ri-inbox-line text-[30px] text-[#A3A3A3]" />
-        <p class="mt-2 text-[14px] text-[#5C5C5C] dark:text-[#A3A3A3]">暂无任务数据</p>
+      <div v-else-if="sections.length === 0" class="px-4 pt-4">
+        <div class="card-shadow rounded-xl bg-white p-4 dark:bg-[#262626]">
+          <div class="inline-flex items-center rounded-full bg-[#F5F5F5] px-2 py-1 text-[12px] font-medium text-[#5C5C5C] dark:bg-[#404040] dark:text-[#A3A3A3]">
+            检修身份
+          </div>
+          <h1 class="mt-3 text-[18px] font-semibold leading-[26px] text-[#171717] dark:text-[#E5E5E5]">
+            检修任务工作台
+          </h1>
+          <p class="mt-2 text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
+            {{ isEmptyDemo
+              ? '当前账号专用于空状态样式演示，方便确认检修工作台在无任务时的布局和文案表现。'
+              : '当前暂无可处理的检修任务，后续接入新任务后会在这里展示待处理、进行中和已完成数据。'
+            }}
+          </p>
+        </div>
+
+        <div class="card-shadow mt-4 flex min-h-[420px] flex-col items-center justify-center rounded-xl bg-white px-6 py-10 text-center dark:bg-[#262626]">
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F5F5F5] dark:bg-[#404040]">
+            <i class="ri-survey-line text-[28px] text-[#5C5C5C] dark:text-[#A3A3A3]" />
+          </div>
+          <h2 class="mt-4 text-[16px] font-medium leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
+            暂无检修任务
+          </h2>
+          <p class="mt-2 max-w-[240px] text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
+            {{ isEmptyDemo
+              ? '这是检修身份的空状态演示账号。后续如果接入新的检修任务数据，这里会替换为真实任务列表与处理入口。'
+              : '当前没有检修任务需要处理。你可以稍后刷新，或切换到其他演示账号查看已有任务数据。'
+            }}
+          </p>
+        </div>
       </div>
 
       <template v-else>
