@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import AppIcon from '@/components/common/app-icon.vue'
 import { useTheme } from '@/services/platform/theme'
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
   title?: string
   subtitle?: string
@@ -14,12 +15,47 @@ const emit = defineEmits<{
 }>()
 
 const { isDark } = useTheme()
+const SHEET_CLOSE_MS = 220
+const rendered = ref(props.visible)
+const phase = ref<'enter' | 'leave'>(props.visible ? 'enter' : 'leave')
+let closeTimer: ReturnType<typeof setTimeout> | null = null
+
+function clearCloseTimer() {
+  if (!closeTimer) return
+  clearTimeout(closeTimer)
+  closeTimer = null
+}
+
+watch(
+  () => props.visible,
+  async (visible) => {
+    clearCloseTimer()
+
+    if (visible) {
+      rendered.value = true
+      await nextTick()
+      phase.value = 'enter'
+      return
+    }
+
+    phase.value = 'leave'
+    closeTimer = setTimeout(() => {
+      rendered.value = false
+      closeTimer = null
+    }, SHEET_CLOSE_MS)
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  clearCloseTimer()
+})
 </script>
 
 <template>
-  <view v-if="visible" class="sheet-wrap">
-    <view class="overlay" @tap="emit('close')" />
-    <view class="sheet-panel" :style="{ maxHeight: maxHeight || '88vh' }">
+  <view v-if="rendered" class="sheet-wrap">
+    <view class="overlay" :class="`overlay--${phase}`" @tap="emit('close')" />
+    <view class="sheet-panel" :class="`sheet-panel--${phase}`" :style="{ maxHeight: maxHeight || '88vh' }">
       <view class="sheet-handle" />
       <view class="sheet-header">
         <view class="sheet-header-copy">
