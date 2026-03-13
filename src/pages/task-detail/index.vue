@@ -54,12 +54,29 @@ const checkedItems = computed(() =>
 )
 
 const progressPercent = computed(() => (totalItems.value ? Math.round((checkedItems.value / totalItems.value) * 100) : 0))
+const sectionTitle = computed(() =>
+  currentBuilding.value ? `${currentBuilding.value.name} · 巡检项目` : '巡检项目',
+)
 
 const statusLabel = computed(() => {
   if (!task.value) return ''
   if (task.value.status === 'active') return '进行中'
   if (task.value.status === 'pending') return '待完成'
   return '已完成'
+})
+
+const statusIconName = computed(() => {
+  if (!task.value) return 'ri-time-fill'
+  if (task.value.status === 'active') return 'ri-loader-2-line'
+  if (task.value.status === 'pending') return 'ri-time-fill'
+  return 'ri-checkbox-circle-fill'
+})
+
+const statusIconColor = computed(() => {
+  if (!task.value) return isDark.value ? '#e5e5e5' : '#171717'
+  if (task.value.status === 'pending') return '#fa7319'
+  if (task.value.status === 'completed') return '#1fc16b'
+  return isDark.value ? '#e5e5e5' : '#171717'
 })
 
 const deadlineDisplayText = computed(() => {
@@ -107,6 +124,14 @@ function categoryStats(category: InspectionCategory) {
   return { total, done }
 }
 
+function categoryPanelHeight(category: InspectionCategory) {
+  const count = category.items.length
+  if (!count) return '0px'
+  const dividerHeight = 1
+  const rowHeight = 54
+  return `${dividerHeight + count * rowHeight + (count - 1) * dividerHeight}px`
+}
+
 function buildingStats(building: Building) {
   const total = building.categories.reduce((sum, category) => sum + category.items.length, 0)
   const done = building.categories.reduce(
@@ -129,6 +154,20 @@ function itemStatusClass(status: CheckItem['status']) {
     focus: status === 'focus',
     risk: status === 'risk',
   }
+}
+
+function itemStatusIcon(status: CheckItem['status']) {
+  if (status === 'normal') return 'ri-checkbox-circle-fill'
+  if (status === 'focus') return 'ri-error-warning-fill'
+  if (status === 'risk') return 'ri-close-circle-fill'
+  return ''
+}
+
+function itemStatusColor(status: CheckItem['status']) {
+  if (status === 'normal') return 'item-status-text normal'
+  if (status === 'focus') return 'item-status-text focus'
+  if (status === 'risk') return 'item-status-text risk'
+  return 'item-status-text'
 }
 
 function toggleCategory(category: InspectionCategory) {
@@ -262,32 +301,45 @@ onPageScroll((event) => {
 
         <template v-else-if="task">
           <view class="card detail-card">
-            <view class="head-row">
-              <text class="chip">{{ statusLabel }}</text>
-              <text v-if="timeRemainingLabel" class="meta-tag">{{ timeRemainingLabel }}</text>
+            <view class="detail-top">
+              <view class="detail-copy">
+                <text class="detail-park">{{ task.parkName }}</text>
+                <text class="detail-name">{{ task.taskName }}</text>
+              </view>
+              <view class="task-status-chip detail-status-chip">
+                <AppIcon :name="statusIconName" :color="statusIconColor" />
+                <text class="task-status-text">{{ statusLabel }}</text>
+              </view>
             </view>
-            <text class="title">{{ task.taskName }}</text>
-            <text class="subtitle">{{ task.parkName }}</text>
-            <text class="meta">{{ deadlineDisplayText }}</text>
 
-            <view class="progress-row">
+            <view class="detail-meta-list">
+              <view class="detail-meta-row">
+                <AppIcon name="ri-map-pin-line" class="detail-meta-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
+                <text class="detail-meta-text">{{ task.address }}</text>
+              </view>
+              <view class="detail-meta-row">
+                <AppIcon name="ri-calendar-line" class="detail-meta-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
+                <text class="detail-meta-text">{{ deadlineDisplayText }}</text>
+                <text v-if="timeRemainingLabel" class="detail-meta-tag">{{ timeRemainingLabel }}</text>
+              </view>
+            </view>
+
+            <view class="progress-block">
+              <view class="progress-head">
+                <text class="progress-label">巡检进度</text>
+                <text class="progress-text">{{ checkedItems }} / {{ totalItems }}</text>
+              </view>
               <view class="progress-track">
-                <view class="progress-bar" :style="{ width: `${progressPercent}%` }" />
-              </view>
-              <text class="progress-text">{{ checkedItems }}/{{ totalItems }}</text>
-            </view>
-
-            <view class="info-grid">
-              <view class="info-item">
-                <text class="info-label">联系人</text>
-                <text class="info-value">{{ task.contact || task.inspector }}</text>
-              </view>
-              <view class="info-item">
-                <text class="info-label">地址</text>
-                <text class="info-value">{{ task.address }}</text>
+                <view
+                  class="progress-bar"
+                  :class="{ complete: progressPercent === 100 }"
+                  :style="{ width: `${progressPercent}%` }"
+                />
               </view>
             </view>
           </view>
+
+          <view class="segment-divider detail-divider" />
 
           <scroll-view scroll-x class="building-tabs" v-if="buildings.length > 1">
             <view class="building-row">
@@ -299,38 +351,58 @@ onPageScroll((event) => {
                 @tap="selectedBuildingIndex = index"
               >
                 <text class="building-name">{{ building.name }}</text>
-                <text class="building-meta">{{ buildingStats(building).done }}/{{ buildingStats(building).total }}</text>
+                <text class="building-meta">{{ buildingStats(building).done }}/{{ buildingStats(building).total }} 已检查</text>
               </view>
             </view>
           </scroll-view>
 
+          <text class="section-title">{{ sectionTitle }}</text>
+
           <view v-for="category in currentBuilding?.categories" :key="category.id" class="card category-card">
-            <view class="category-head" @tap="toggleCategory(category)">
+            <view class="category-head" :class="{ expanded: expandedCategoryIds.includes(category.id) }" @tap="toggleCategory(category)">
               <view class="category-copy">
-                <text class="category-title">{{ category.name }}</text>
-                <text class="category-desc">{{ category.description }}</text>
+                <view class="category-main-line">
+                  <text class="category-title">{{ category.name }}</text>
+                  <text class="category-meta">{{ categoryStats(category).done }}/{{ categoryStats(category).total }} 已检查</text>
+                </view>
+                <text v-if="expandedCategoryIds.includes(category.id) && category.description" class="category-desc">{{ category.description }}</text>
               </view>
               <view class="category-side">
-                <text class="category-meta">{{ categoryStats(category).done }}/{{ categoryStats(category).total }}</text>
                   <AppIcon
                     name="ri-arrow-down-s-line"
                     :color="isDark ? '#a3a3a3' : '#5c5c5c'"
+                    class="category-arrow"
                     :class="{ rotated: expandedCategoryIds.includes(category.id) }"
                   />
               </view>
             </view>
 
-            <view v-if="expandedCategoryIds.includes(category.id)" class="item-list">
+            <view
+              class="item-list"
+              :class="{ expanded: expandedCategoryIds.includes(category.id) }"
+              :style="{ maxHeight: expandedCategoryIds.includes(category.id) ? categoryPanelHeight(category) : '0px' }"
+            >
+              <view class="category-divider" />
               <view
                 v-for="item in category.items"
                 :key="item.id"
                 class="item-row"
                 @tap="openEditor(item)"
               >
+                <view class="item-state-mark">
+                  <AppIcon
+                    v-if="item.status !== 'unchecked'"
+                    :name="itemStatusIcon(item.status)"
+                    class="item-state-icon"
+                    :class="itemStatusClass(item.status)"
+                    :color="item.status === 'normal' ? '#1fc16b' : item.status === 'focus' ? '#fa7319' : '#e5484d'"
+                  />
+                  <view v-else class="item-state-ring" />
+                </view>
                 <view class="item-copy">
                   <text class="item-name">{{ item.name }}</text>
-                  <text class="item-status" :class="itemStatusClass(item.status)">{{ itemStatusLabel(item.status) }}</text>
                 </view>
+                <text v-if="item.status !== 'unchecked'" :class="itemStatusColor(item.status)">{{ itemStatusLabel(item.status) }}</text>
                 <AppIcon name="ri-arrow-right-s-line" class="item-arrow" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
               </view>
             </view>
@@ -380,56 +452,111 @@ onPageScroll((event) => {
   gap: 16rpx;
 }
 
-.detail-card,
-.category-card {
+.detail-card {
   padding: 24rpx;
   margin-top: 16rpx;
 }
 
-.head-row {
+.category-card {
+  margin-top: 16rpx;
+  padding: 0;
+  overflow: hidden;
+}
+
+.detail-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12rpx;
-}
-
-.title {
-  display: block;
-  margin-top: 16rpx;
-  font-size: 36rpx;
-  line-height: 52rpx;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.subtitle,
-.meta {
-  display: block;
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  line-height: 36rpx;
-  color: var(--text-secondary);
-}
-
-.meta-tag {
-  display: inline-flex;
-  padding: 8rpx 14rpx;
-  border-radius: 999rpx;
-  background: var(--bg-chip-info);
-  color: var(--brand-blue);
-  font-size: 22rpx;
-}
-
-.progress-row {
-  margin-top: 24rpx;
-  display: flex;
-  align-items: center;
   gap: 16rpx;
 }
 
-.progress-track {
+.detail-copy {
   flex: 1;
-  height: 14rpx;
+  min-width: 0;
+}
+
+.detail-park {
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.detail-name {
+  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.detail-status-chip {
+  margin-top: 2rpx;
+}
+
+.detail-meta-list {
+  margin-top: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.detail-meta-icon {
+  width: 36rpx;
+  height: 36rpx;
+  flex: none;
+}
+
+.detail-meta-text {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.detail-meta-tag {
+  display: inline-flex;
+  margin-left: 8rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  background: var(--bg-chip);
+  color: var(--text-secondary);
+  font-size: 20rpx;
+  line-height: 28rpx;
+  font-weight: 500;
+}
+
+.progress-block {
+  margin-top: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.progress-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.progress-track {
+  width: 100%;
+  height: 12rpx;
   border-radius: 999rpx;
   background: var(--border-subtle);
   overflow: hidden;
@@ -441,45 +568,33 @@ onPageScroll((event) => {
   background: var(--text-primary);
 }
 
+.theme-dark .progress-bar {
+  background: #e5e5e5;
+}
+
+.progress-bar.complete {
+  background: var(--status-success);
+}
+
 .progress-text {
-  font-size: 24rpx;
+  font-size: 12px;
+  line-height: 16px;
   color: var(--text-secondary);
 }
 
-.info-grid {
-  margin-top: 24rpx;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16rpx;
-}
-
-.info-label {
-  display: block;
-  font-size: 22rpx;
-  color: var(--text-tertiary);
-}
-
-.info-value {
-  display: block;
-  margin-top: 6rpx;
-  font-size: 26rpx;
-  line-height: 38rpx;
-  color: var(--text-primary);
-}
-
 .building-tabs {
-  margin-top: 20rpx;
+  margin-top: 0;
 }
 
 .building-row {
   display: flex;
-  gap: 12rpx;
+  gap: 10rpx;
 }
 
 .building-tab {
-  min-width: 200rpx;
-  padding: 20rpx;
-  border-radius: 20rpx;
+  min-width: 188rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
   background: var(--bg-soft);
 }
 
@@ -490,118 +605,206 @@ onPageScroll((event) => {
 
 .building-name {
   display: block;
-  font-size: 26rpx;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
   color: inherit;
 }
 
 .building-meta {
   display: block;
-  margin-top: 6rpx;
-  font-size: 22rpx;
+  margin-top: 4rpx;
+  font-size: 12px;
+  line-height: 16px;
   opacity: 0.8;
   color: inherit;
 }
 
+.section-title {
+  display: block;
+  margin-top: 24rpx;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .category-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16rpx;
+  padding: 0 24rpx;
+  min-height: 56px;
+}
+
+.category-head.expanded {
+  align-items: flex-start;
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .category-copy {
   flex: 1;
+  min-width: 0;
+}
+
+.category-main-line {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  min-width: 0;
 }
 
 .category-title {
   display: block;
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   color: var(--text-primary);
+  flex: none;
 }
 
 .category-desc {
   display: block;
-  margin-top: 8rpx;
-  font-size: 22rpx;
-  line-height: 32rpx;
-  color: var(--text-tertiary);
+  margin-top: 4rpx;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
 }
 
 .category-side {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  justify-content: flex-end;
+  flex: none;
   color: var(--text-tertiary);
 }
 
 .category-meta {
-  font-size: 22rpx;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
+  min-width: 0;
+  white-space: nowrap;
 }
 
-.rotated {
+.category-arrow {
+  width: 24px;
+  height: 24px;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: rotate(0deg);
+}
+
+.category-arrow.rotated {
   transform: rotate(180deg);
 }
 
 .item-list {
-  margin-top: 18rpx;
+  margin-top: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 280ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    opacity 200ms ease 40ms;
+  pointer-events: none;
+}
+
+.item-list.expanded {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.category-divider {
+  height: 1px;
+  margin: 0 24rpx;
+  background: var(--border-subtle);
 }
 
 .item-row {
-  padding: 18rpx 0;
+  height: 54px;
+  padding: 0 24rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
+  gap: 8px;
 }
 
 .item-row + .item-row {
-  border-top: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.item-row + .item-row::before {
+  content: '';
+  position: absolute;
+  left: 24rpx;
+  right: 24rpx;
+  top: 0;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.item-state-mark {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.item-state-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.item-state-ring {
+  width: 18px;
+  height: 18px;
+  border-radius: 999rpx;
+  border: 2px solid var(--border-strong);
+  box-sizing: border-box;
 }
 
 .item-copy {
   flex: 1;
+  min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 8rpx;
+  align-items: center;
+  min-height: 20px;
 }
 
 .item-name {
   display: block;
-  font-size: 26rpx;
-  line-height: 38rpx;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--text-primary);
+  transform: translateY(-0.5px);
 }
 
-.item-status {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 6rpx 14rpx;
-  border-radius: 999rpx;
-  font-size: 22rpx;
-  line-height: 30rpx;
-  background: var(--bg-chip);
+.item-status-text {
+  flex: none;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--text-secondary);
+  transform: translateY(-0.5px);
 }
 
-.item-status.normal {
-  background: var(--status-success-soft);
+.item-status-text.normal {
   color: var(--status-success);
 }
 
-.item-status.focus {
-  background: var(--status-warning-soft);
+.item-status-text.focus {
   color: var(--status-warning);
 }
 
-.item-status.risk {
-  background: var(--status-danger-soft);
+.item-status-text.risk {
   color: var(--status-danger);
 }
 
 .item-arrow {
-  font-size: 28rpx;
+  font-size: 20px;
+  margin-left: 4px;
 }
 
 .bottom-bar {
@@ -640,6 +843,10 @@ onPageScroll((event) => {
 
 .retry-btn {
   width: 200rpx;
+}
+
+.detail-divider {
+  margin: 16px 0;
 }
 
 .spinner {

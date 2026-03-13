@@ -569,24 +569,32 @@ onPageScroll((event) => {
   z-index: 48;
   margin: 0 calc(-1 * var(--page-content-gutter));
   padding: 0 var(--page-content-gutter);
-  background: transparent;
-  border-bottom: 1px solid transparent;
+  background: rgba(255, 255, 255, 0);
+  border-bottom: 1px solid rgba(23, 23, 23, 0);
   transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
+    background-color 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease,
+    backdrop-filter 0.28s ease;
 }
 
 .record-sticky--stuck {
   background: var(--bg-card);
   border-bottom-color: rgba(23, 23, 23, 0.12);
   box-shadow: 0 4px 12px rgba(23, 23, 23, 0.04);
+  backdrop-filter: saturate(1.05);
+}
+
+.theme-dark .record-sticky {
+  background: rgba(38, 38, 38, 0);
+  border-bottom-color: rgba(255, 255, 255, 0);
 }
 
 .theme-dark .record-sticky--stuck {
   background: var(--bg-card);
   border-bottom-color: rgba(255, 255, 255, 0.12);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  backdrop-filter: saturate(1.05);
 }
 
 .record-head {
@@ -595,6 +603,11 @@ onPageScroll((event) => {
   align-items: center;
   justify-content: space-between;
   padding: 16rpx 0 10rpx;
+  transition: transform 0.28s ease;
+}
+
+.record-sticky--stuck .record-head {
+  transform: translateY(-2rpx);
 }
 
 .record-head-anchor {
