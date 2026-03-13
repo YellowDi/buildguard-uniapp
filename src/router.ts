@@ -30,6 +30,12 @@ const router = createRouter({
       meta: { title: '维修工作台', requiresRole: 'maintainer' satisfies UserRole },
     },
     {
+      path: '/maintenance/task/:id',
+      name: 'maintenanceDetail',
+      component: () => import('./components/maintenance/MaintenanceDetail.vue'),
+      meta: { title: '维修任务详情', requiresRole: 'maintainer' satisfies UserRole },
+    },
+    {
       path: '/task/:id',
       name: 'taskDetail',
       component: () => import('./components/task/TaskDetail.vue'),

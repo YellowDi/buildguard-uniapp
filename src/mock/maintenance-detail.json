@@ -1,0 +1,344 @@
+{
+  "101": {
+    "id": 101,
+    "parkName": "华东智能制造产业园",
+    "taskName": "A栋应急照明故障修复",
+    "buildingName": "A栋",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "B3区 2层东侧疏散通道",
+    "sourceInspectionTask": "2025 年 12 月综合巡检",
+    "sourceFinding": "2盏应急照明断电后未恢复，需当天修复。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "high",
+    "deadline": "3 月 15 日前完成",
+    "plannedAt": "2026-03-12",
+    "status": "active",
+    "contact": "陈主管",
+    "phone": "13800001234",
+    "issueCategory": "应急照明",
+    "riskLevelLabel": "夜间疏散风险高",
+    "dispatchReason": "检修发现 B3 区疏散通道应急灯断电不亮，已生成紧急维修工单。",
+    "sourceInspectionItem": "疏散通道应急照明",
+    "sourceStatusLabel": "存在风险",
+    "sourceDescription": "B3 区 2 层东侧疏散通道 2 盏应急照明不亮，断电切换后未恢复。",
+    "sourceImpact": "夜间或断电场景下疏散可视性不足，可能延长人员撤离时间，需当天修复。",
+    "sourceRemark": "A 栋 B3 区 2 层应急灯故障，已提交维修工单。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-5005-a/480/320",
+      "https://picsum.photos/seed/buildguard-5005-b/480/320"
+    ],
+    "workOrderNo": "WX-20260312-101",
+    "requiredTools": ["绝缘万用表", "折叠人字梯", "绝缘螺丝刀"],
+    "requiredMaterials": ["LED应急灯电源模块", "接线端子", "备用灯管"],
+    "safetyNotes": ["检修前需先切断照明支路电源", "施工区域需设置临时警示围挡"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-5005-a/480/320"
+    ],
+    "steps": [
+      { "id": 1, "title": "到场复核故障", "description": "核对断电切换状态与灯具回路编号。", "status": "done" },
+      { "id": 2, "title": "更换损坏模块", "description": "拆检两盏应急灯，更换故障驱动与电池模块。", "status": "active" },
+      { "id": 3, "title": "断电联动测试", "description": "恢复送电后进行断电切换和亮度测试。", "status": "pending" }
+    ]
+  },
+  "102": {
+    "id": 102,
+    "parkName": "华南物流枢纽园区",
+    "taskName": "1号仓库西侧配电箱风扇更换",
+    "buildingName": "1号仓库",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "西侧设备夹层配电箱",
+    "sourceInspectionTask": "2026 年 3 月综合巡检",
+    "sourceFinding": "散热风扇异响并伴随温升，建议更换风扇模组。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "medium",
+    "deadline": "3 月 18 日前完成",
+    "plannedAt": "2026-03-13",
+    "status": "active",
+    "contact": "周值班长",
+    "phone": "13800004567",
+    "issueCategory": "配电散热",
+    "riskLevelLabel": "中度温升风险",
+    "dispatchReason": "检修过程中发现配电箱散热异常，需要更换风扇并清理滤网。",
+    "sourceInspectionItem": "配电箱散热风扇运行状态",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "1号仓库西侧设备夹层配电箱散热风扇异响明显，柜内局部测温较周边高 6.8℃。",
+    "sourceImpact": "若持续运行，配电箱散热效率下降，可能导致元件温升加剧并缩短使用寿命。",
+    "sourceRemark": "建议本周内更换风扇模组并清理防尘滤网。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-102-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-102-b/480/320"
+    ],
+    "workOrderNo": "WX-20260313-102",
+    "requiredTools": ["十字螺丝刀", "热成像仪", "吸尘器"],
+    "requiredMaterials": ["120mm风扇模组", "防尘滤网"],
+    "safetyNotes": ["确认设备已停电挂牌", "清洁前避免粉尘进入带电区域"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-102-a/480/320"
+    ],
+    "steps": [
+      { "id": 1, "title": "停电挂牌", "description": "对西侧配电箱执行停电挂牌和验电。", "status": "done" },
+      { "id": 2, "title": "拆换风扇", "description": "更换异常风扇并同步更换滤网。", "status": "active" },
+      { "id": 3, "title": "复测温升", "description": "恢复运行后记录30分钟温升数据。", "status": "pending" }
+    ]
+  },
+  "103": {
+    "id": 103,
+    "parkName": "华东智能制造产业园",
+    "taskName": "B栋桥架老化线缆分段更换",
+    "buildingName": "B栋",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "西侧桥架检修段",
+    "sourceInspectionTask": "2025 年 12 月综合巡检",
+    "sourceFinding": "线缆护套老化裂纹明显，建议纳入本周预防性更换。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "medium",
+    "plannedAt": "2026-03-19",
+    "deadline": "3 月 22 日前完成",
+    "status": "pending",
+    "contact": "陈主管",
+    "phone": "13800001234",
+    "issueCategory": "线缆老化",
+    "riskLevelLabel": "绝缘性能下降",
+    "dispatchReason": "检修报告建议安排预防性替换，避免受潮后绝缘击穿。",
+    "sourceInspectionItem": "桥架线缆外护套完整性",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "B 栋西侧桥架段线缆外护套存在连续裂纹，局部老化发白，未见铜芯外露。",
+    "sourceImpact": "若后续受潮或继续老化，绝缘性能可能下降，存在短路和漏电风险。",
+    "sourceRemark": "纳入本周预防性更换计划，优先处理外墙转角段。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-103-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-103-b/480/320"
+    ],
+    "workOrderNo": "WX-20260319-103",
+    "requiredTools": ["桥架开盖工具", "绝缘胶带", "线缆测温仪"],
+    "requiredMaterials": ["阻燃电缆", "扎带", "桥架标识牌"],
+    "safetyNotes": ["施工前确认替代回路已切换", "高空作业需两人配合"],
+    "steps": [
+      { "id": 1, "title": "接单排期", "description": "确认停电窗口并领取更换材料。", "status": "pending" },
+      { "id": 2, "title": "分段更换线缆", "description": "拆除老化段并重新敷设阻燃电缆。", "status": "pending" },
+      { "id": 3, "title": "绝缘测试与标识恢复", "description": "完成摇表测试并补齐线缆标识。", "status": "pending" }
+    ]
+  },
+  "104": {
+    "id": 104,
+    "parkName": "长三角新能源产业园",
+    "taskName": "A栋充电桩配电回路紧固",
+    "buildingName": "A栋",
+    "address": "浙江省宁波市北仑区科创大道66号",
+    "location": "地下车库充电桩配电柜",
+    "sourceInspectionTask": "2025 年 11 月设备维护巡检",
+    "sourceFinding": "回路端子轻微松动，存在发热风险。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "medium",
+    "completedAt": "2026-03-05",
+    "status": "completed",
+    "contact": "王班长",
+    "phone": "13800007890",
+    "issueCategory": "配电回路",
+    "riskLevelLabel": "局部发热风险",
+    "dispatchReason": "对充电桩配电柜进行端子紧固和复测。",
+    "sourceInspectionItem": "充电桩配电回路端子紧固度",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "地下车库充电桩配电柜 2 号回路端子存在轻微松动，热成像显示接线端温度偏高。",
+    "sourceImpact": "持续运行可能引发局部发热，进而影响回路稳定性和充电设备供电安全。",
+    "sourceRemark": "建议安排停电窗口完成紧固并复测温升。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-104-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-104-b/480/320"
+    ],
+    "workOrderNo": "WX-20260305-104",
+    "requiredTools": ["扭力扳手", "热成像仪"],
+    "requiredMaterials": ["端子铜鼻子", "耐热标签"],
+    "safetyNotes": ["复电前需完成扭矩复核", "作业完成后需恢复护盖"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-104-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-104-b/480/320"
+    ],
+    "executionNote": "已对 2 号回路端子重新紧固并复测温升，运行 30 分钟后温升恢复正常，柜内无异常异味和二次发热。",
+    "steps": [
+      { "id": 1, "title": "停电验电", "description": "执行停电挂牌并完成验电。", "status": "done" },
+      { "id": 2, "title": "紧固端子", "description": "按标准扭矩重新紧固各回路端子。", "status": "done" },
+      { "id": 3, "title": "热成像复测", "description": "复电后监测温升恢复正常。", "status": "done" }
+    ],
+    "completionSummary": "回路端子已全部按标准扭矩紧固，复电后最高温升恢复到 39.4℃，设备运行正常。"
+  },
+  "105": {
+    "id": 105,
+    "parkName": "华东智能制造产业园",
+    "taskName": "F栋消防泵房照明回路恢复",
+    "buildingName": "F栋",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "消防泵房配电末端",
+    "sourceInspectionTask": "2025 年 10 月消防安全检查",
+    "sourceFinding": "照明回路开关老化，夜间检修照度不足。",
+    "assignee": "李电工",
+    "trade": "electric",
+    "priority": "high",
+    "completedAt": "2026-02-26",
+    "status": "completed",
+    "contact": "陈主管",
+    "phone": "13800001234",
+    "issueCategory": "消防配电",
+    "riskLevelLabel": "夜间检修风险",
+    "dispatchReason": "消防泵房照明回路恢复，保证值班检修时的照明条件。",
+    "sourceInspectionItem": "消防泵房照明回路状态",
+    "sourceStatusLabel": "存在风险",
+    "sourceDescription": "F 栋消防泵房照明回路开关老化，夜间值守时局部照度不足，切换时有接触不良现象。",
+    "sourceImpact": "影响泵房夜间巡视和紧急检修作业，存在消防应急处置响应风险。",
+    "sourceRemark": "需尽快更换开关模块并完成照度抽测。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-105-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-105-b/480/320"
+    ],
+    "workOrderNo": "WX-20260226-105",
+    "requiredTools": ["绝缘螺丝刀", "万用表"],
+    "requiredMaterials": ["照明开关模块", "端子排"],
+    "safetyNotes": ["消防泵房施工期间不得影响值班巡视", "更换后需执行照度抽测"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-105-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-105-b/480/320"
+    ],
+    "executionNote": "已更换老化开关模块并恢复末端回路，夜间照度抽测达标，值班巡视路线可正常识别。",
+    "steps": [
+      { "id": 1, "title": "回路隔离", "description": "隔离故障支路并保护现场设备。", "status": "done" },
+      { "id": 2, "title": "更换开关模块", "description": "更换老化开关和端子排。", "status": "done" },
+      { "id": 3, "title": "照度复测", "description": "完成照度测试并恢复正常运行。", "status": "done" }
+    ],
+    "completionSummary": "照明回路已恢复，泵房主要作业面照度达到巡检标准，夜间检修条件正常。"
+  },
+  "201": {
+    "id": 201,
+    "parkName": "长三角新能源产业园",
+    "taskName": "C栋卫生间给水阀渗漏维修",
+    "buildingName": "C栋",
+    "address": "浙江省宁波市北仑区科创大道66号",
+    "location": "3层东侧卫生间检修口",
+    "sourceInspectionTask": "2026 年 3 月综合巡检",
+    "sourceFinding": "给水阀接口渗水，已影响吊顶内保温层。",
+    "assignee": "孙水工",
+    "trade": "plumbing",
+    "priority": "high",
+    "deadline": "3 月 16 日前完成",
+    "plannedAt": "2026-03-13",
+    "status": "active",
+    "contact": "王班长",
+    "phone": "13800007890",
+    "issueCategory": "给水渗漏",
+    "riskLevelLabel": "持续渗漏风险高",
+    "dispatchReason": "检修发现阀门接口渗漏，已影响周边吊顶保温层，需尽快更换密封件。",
+    "sourceInspectionItem": "卫生间给水阀接口密封状态",
+    "sourceStatusLabel": "存在风险",
+    "sourceDescription": "C 栋 3 层东侧卫生间检修口内给水阀接口持续渗水，周边保温层已有明显潮湿痕迹。",
+    "sourceImpact": "持续渗漏可能进一步浸湿吊顶和墙体，增加次生损坏与滑倒风险。",
+    "sourceRemark": "优先更换密封件并检查相邻阀组状态。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-201-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-201-b/480/320"
+    ],
+    "workOrderNo": "WX-20260313-201",
+    "requiredTools": ["活动扳手", "止水夹", "检漏纸"],
+    "requiredMaterials": ["阀门密封件", "生料带", "保温棉"],
+    "safetyNotes": ["施工前需关闭对应楼层给水阀", "更换后检查吊顶内无残留积水"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-201-a/480/320"
+    ],
+    "steps": [
+      { "id": 1, "title": "关闭阀门并排水", "description": "关闭东侧给水阀并释放余压。", "status": "done" },
+      { "id": 2, "title": "更换密封件", "description": "拆除老化密封并重新缠绕生料带。", "status": "active" },
+      { "id": 3, "title": "恢复保温层", "description": "确认无渗漏后恢复吊顶内保温层。", "status": "pending" }
+    ]
+  },
+  "202": {
+    "id": 202,
+    "parkName": "华南物流枢纽园区",
+    "taskName": "综合楼屋面雨水斗堵塞处理",
+    "buildingName": "综合楼",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "屋面东南角排水点",
+    "sourceInspectionTask": "2026 年 3 月综合巡检",
+    "sourceFinding": "雨水斗积叶严重，暴雨时存在局部积水倒灌风险。",
+    "assignee": "孙水工",
+    "trade": "plumbing",
+    "priority": "low",
+    "plannedAt": "2026-03-20",
+    "deadline": "3 月 25 日前完成",
+    "status": "pending",
+    "contact": "周值班长",
+    "phone": "13800004567",
+    "issueCategory": "雨水排水",
+    "riskLevelLabel": "强降雨时排水受限",
+    "dispatchReason": "巡检建议清理雨水斗和排水支管，避免季节性堵塞。",
+    "sourceInspectionItem": "屋面雨水斗通畅情况",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "综合楼屋面东南角雨水斗积叶严重，排水口截面缩小，局部已有泥沙淤积。",
+    "sourceImpact": "强降雨时排水能力不足，可能导致屋面积水和局部倒灌。",
+    "sourceRemark": "建议晴天窗口安排清掏，并补装防叶网。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-202-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-202-b/480/320"
+    ],
+    "workOrderNo": "WX-20260320-202",
+    "requiredTools": ["高压疏通枪", "防滑绳", "清污铲"],
+    "requiredMaterials": ["防叶网", "密封胶"],
+    "safetyNotes": ["屋面作业需两人同行", "降雨天气禁止上屋面施工"],
+    "steps": [
+      { "id": 1, "title": "勘察排水点", "description": "确认堵塞范围及支管走向。", "status": "pending" },
+      { "id": 2, "title": "清理雨水斗", "description": "清除杂物并冲洗排水支管。", "status": "pending" },
+      { "id": 3, "title": "安装防叶网", "description": "恢复排水能力后加装防叶网。", "status": "pending" }
+    ]
+  },
+  "203": {
+    "id": 203,
+    "parkName": "华东智能制造产业园",
+    "taskName": "D栋空调冷凝水管滴漏处理",
+    "buildingName": "D栋",
+    "address": "浙江省宁波市鄞州区菁华路188号",
+    "location": "2层设备平台吊顶内",
+    "sourceInspectionTask": "2025 年 12 月综合巡检",
+    "sourceFinding": "冷凝水管接头老化，滴漏已浸湿局部吊顶。",
+    "assignee": "孙水工",
+    "trade": "plumbing",
+    "priority": "medium",
+    "completedAt": "2026-03-04",
+    "status": "completed",
+    "contact": "陈主管",
+    "phone": "13800001234",
+    "issueCategory": "冷凝水排放",
+    "riskLevelLabel": "吊顶受潮风险",
+    "dispatchReason": "更换老化接头并重新固定坡度，防止后续滴漏。",
+    "sourceInspectionItem": "空调冷凝水管接头状态",
+    "sourceStatusLabel": "需重点关注",
+    "sourceDescription": "D 栋 2 层设备平台吊顶内冷凝水管接头老化，滴漏已浸湿局部吊顶板。",
+    "sourceImpact": "若不处理，可能继续造成吊顶受潮、霉变，并影响相邻弱电桥架环境。",
+    "sourceRemark": "同步检查冷凝水排放坡度和固定件。",
+    "sourcePhotos": [
+      "https://picsum.photos/seed/buildguard-maint-203-a/480/320",
+      "https://picsum.photos/seed/buildguard-maint-203-b/480/320"
+    ],
+    "workOrderNo": "WX-20260304-203",
+    "requiredTools": ["割管器", "坡度尺", "手电"],
+    "requiredMaterials": ["PVC接头", "管卡", "保温棉"],
+    "safetyNotes": ["施工前确认空调已停机", "恢复吊顶前需确保接头干燥无渗漏"],
+    "beforeMedia": [
+      "https://picsum.photos/seed/buildguard-maint-203-a/480/320"
+    ],
+    "afterMedia": [
+      "https://picsum.photos/seed/buildguard-maint-203-b/480/320"
+    ],
+    "executionNote": "已更换冷凝水接头并重新调整坡度，复机观察 30 分钟未再出现滴漏，吊顶内已完成干燥处理。",
+    "steps": [
+      { "id": 1, "title": "拆除老化接头", "description": "拆除滴漏段并清理积水。", "status": "done" },
+      { "id": 2, "title": "重做接头与坡度", "description": "更换接头并重新调整冷凝水排放坡度。", "status": "done" },
+      { "id": 3, "title": "复机观察", "description": "空调复机后观察 30 分钟确认无滴漏。", "status": "done" }
+    ],
+    "completionSummary": "冷凝水排放已恢复正常，吊顶内无继续受潮迹象，保温层已重新恢复。"
+  }
+}

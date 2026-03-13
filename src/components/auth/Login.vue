@@ -141,7 +141,7 @@ function onQuickLogin(user: DemoUser) {
             <div>
               <p class="text-[13px] font-medium text-[#171717] dark:text-[#E5E5E5]">快捷登录</p>
               <p class="mt-1 text-[12px] leading-[18px] text-[#5C5C5C] dark:text-[#A3A3A3]">
-                临时测试入口。检修身份可查看当前数据；维修身份仅进入空状态工作台。
+                临时测试入口。检修身份可查看巡检数据；维修身份按工种查看对应维修任务。
               </p>
             </div>
           </div>
@@ -167,6 +167,12 @@ function onQuickLogin(user: DemoUser) {
                   </span>
                   <span class="rounded-full bg-[#F5F5F5] px-2 py-0.5 text-[11px] font-medium text-[#5C5C5C] dark:bg-[#404040] dark:text-[#A3A3A3]">
                     {{ user.roleLabel }}
+                  </span>
+                  <span
+                    v-if="user.specialtyLabel"
+                    class="rounded-full bg-[#EEF6FF] px-2 py-0.5 text-[11px] font-medium text-[#006ADC] dark:bg-[#0E2847] dark:text-[#7DB9FF]"
+                  >
+                    {{ user.specialtyLabel }}
                   </span>
                   </div>
                   <p class="mt-1 text-[12px] leading-[18px] text-[#5C5C5C] dark:text-[#A3A3A3]">

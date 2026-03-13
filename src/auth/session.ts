@@ -1,3 +1,5 @@
+import type { MaintenanceTrade } from '../types/maintenance'
+
 export type UserRole = 'inspector' | 'maintainer'
 
 export type DemoUser = {
@@ -8,6 +10,8 @@ export type DemoUser = {
   avatarUrl: string
   role: UserRole
   demoMode?: 'default' | 'empty'
+  specialty?: MaintenanceTrade
+  specialtyLabel?: string
   roleLabel: string
   description: string
 }
@@ -18,6 +22,8 @@ export type AuthSession = {
   avatarUrl: string
   role: UserRole
   demoMode: 'default' | 'empty'
+  specialty?: MaintenanceTrade
+  specialtyLabel?: string
 }
 
 const USER_STORAGE_KEY = 'buildguard-user'
@@ -51,23 +57,27 @@ export const DEMO_USERS: DemoUser[] = [
     id: 'maintainer-demo',
     username: 'repair_demo',
     password: '123456',
-    displayName: '李维修',
+    displayName: '李电工',
     avatarUrl: '/avatar-maintainer-default.png',
     role: 'maintainer',
     demoMode: 'default',
+    specialty: 'electric',
+    specialtyLabel: '电工',
     roleLabel: '维修身份',
-    description: '进入维修任务工作台，当前先展示空状态页面。',
+    description: '查看电气类维修工单，来源于检修异常后的派单任务。',
   },
   {
-    id: 'maintainer-empty-demo',
-    username: 'repair_empty',
+    id: 'maintainer-plumbing-demo',
+    username: 'repair_plumbing',
     password: '123456',
-    displayName: '孙维修',
+    displayName: '孙水工',
     avatarUrl: '/avatar-maintainer-empty.png',
     role: 'maintainer',
-    demoMode: 'empty',
-    roleLabel: '维修空状态',
-    description: '进入维修空状态演示页，用于展示无任务时的布局和文案。',
+    demoMode: 'default',
+    specialty: 'plumbing',
+    specialtyLabel: '水工',
+    roleLabel: '维修身份',
+    description: '查看给排水类维修工单，来源于检修异常后的派单任务。',
   },
 ]
 
@@ -110,6 +120,8 @@ export function getStoredSession(): AuthSession | null {
     avatarUrl: matchedUser?.avatarUrl || '',
     role,
     demoMode: matchedUser?.demoMode || 'default',
+    specialty: matchedUser?.specialty,
+    specialtyLabel: matchedUser?.specialtyLabel,
   }
 }
 
