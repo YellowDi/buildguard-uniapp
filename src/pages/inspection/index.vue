@@ -14,11 +14,12 @@ import { useTheme } from '@/services/platform/theme'
 const sections = ref<TaskSection[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
-const showFilterSheet = ref(false)
 const showPlannedSheet = ref(false)
 const selectedPark = ref<string | null>(null)
 const navScrolled = ref(false)
 const recordHeadStuck = ref(false)
+const filterPopoverRendered = ref(false)
+const filterPopoverActive = ref(false)
 const currentUserName = ref('张检修')
 const currentUserAvatar = ref('/static/avatar-inspector-default.png')
 const isEmptyDemo = ref(false)
@@ -26,6 +27,7 @@ const { isDark } = useTheme()
 const navBarVars = usePageNavVars()
 const instance = getCurrentInstance()
 let recordHeadThreshold = Number.POSITIVE_INFINITY
+let filterPopoverTimer: ReturnType<typeof setTimeout> | null = null
 const recordHeadStyle = computed(() => {
   const navHeight = parseFloat(String(navBarVars['--page-nav-height'] || '44'))
   return {
@@ -85,6 +87,42 @@ function onLogout() {
   goLogin()
 }
 
+function clearFilterPopoverTimer() {
+  if (!filterPopoverTimer) return
+  clearTimeout(filterPopoverTimer)
+  filterPopoverTimer = null
+}
+
+function openFilterPopover() {
+  clearFilterPopoverTimer()
+  filterPopoverRendered.value = true
+  nextTick(() => {
+    filterPopoverActive.value = true
+  })
+}
+
+function closeFilterPopover() {
+  clearFilterPopoverTimer()
+  filterPopoverActive.value = false
+  filterPopoverTimer = setTimeout(() => {
+    filterPopoverRendered.value = false
+    filterPopoverTimer = null
+  }, 150)
+}
+
+function toggleFilterPopover() {
+  if (filterPopoverRendered.value) {
+    closeFilterPopover()
+    return
+  }
+  openFilterPopover()
+}
+
+function selectPark(park: string | null) {
+  selectedPark.value = park
+  closeFilterPopover()
+}
+
 function measureRecordHeadThreshold() {
   if (!instance?.proxy || loading.value || errorMessage.value || sections.value.length === 0) {
     recordHeadThreshold = Number.POSITIVE_INFINITY
@@ -125,11 +163,20 @@ onPageScroll((event) => {
   }
 
   recordHeadStuck.value = event.scrollTop >= recordHeadThreshold
+
+  if (filterPopoverRendered.value) {
+    closeFilterPopover()
+  }
 })
 </script>
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
+    <view
+      v-if="filterPopoverRendered"
+      class="filter-popover-backdrop"
+      @tap="closeFilterPopover"
+    />
     <view class="home-nav" :class="{ 'home-nav--scrolled': navScrolled }" :style="navBarVars">
       <view class="home-nav__inner">
         <view class="home-nav__main">
@@ -244,9 +291,36 @@ onPageScroll((event) => {
           <view class="record-sticky" :class="{ 'record-sticky--stuck': recordHeadStuck }" :style="recordHeadStyle">
             <view class="record-head">
               <text class="record-title">归档任务</text>
-              <view class="filter-pill" :class="{ active: !!selectedPark }" @tap="showFilterSheet = true">
-                <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
-                <text>{{ selectedPark || '筛选' }}</text>
+              <view class="filter-anchor">
+                <view class="filter-pill" :class="{ active: !!selectedPark }" @tap.stop="toggleFilterPopover">
+                  <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
+                  <text>{{ selectedPark || '筛选' }}</text>
+                </view>
+                <view
+                  v-if="filterPopoverRendered"
+                  class="filter-popover"
+                  :class="{ 'filter-popover--active': filterPopoverActive }"
+                  @tap.stop
+                >
+                  <view
+                    class="filter-option"
+                    :class="{ active: !selectedPark }"
+                    @tap="selectPark(null)"
+                  >
+                    <AppIcon name="ri-checkbox-circle-fill" :color="!selectedPark ? (isDark ? '#e5e5e5' : '#171717') : 'transparent'" />
+                    <text>全部园区</text>
+                  </view>
+                  <view
+                    v-for="park in parkNames"
+                    :key="park"
+                    class="filter-option"
+                    :class="{ active: selectedPark === park }"
+                    @tap="selectPark(park)"
+                  >
+                    <AppIcon name="ri-checkbox-circle-fill" :color="selectedPark === park ? (isDark ? '#e5e5e5' : '#171717') : 'transparent'" />
+                    <text>{{ park }}</text>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
@@ -273,25 +347,6 @@ onPageScroll((event) => {
         </template>
       </view>
     </view>
-
-    <BaseSheet :visible="showFilterSheet" title="筛选园区" @close="showFilterSheet = false">
-      <view class="sheet-option-list">
-        <view class="sheet-option" :class="{ active: !selectedPark }" @tap="selectedPark = null; showFilterSheet = false">
-          <text>全部园区</text>
-          <text class="sheet-option-subtext">显示全部记录</text>
-        </view>
-        <view
-          v-for="park in parkNames"
-          :key="park"
-          class="sheet-option"
-          :class="{ active: selectedPark === park }"
-          @tap="selectedPark = park; showFilterSheet = false"
-        >
-          <text>{{ park }}</text>
-          <text class="sheet-option-subtext">仅查看该园区</text>
-        </view>
-      </view>
-    </BaseSheet>
 
     <BaseSheet :visible="showPlannedSheet" title="未来计划巡检任务" @close="showPlannedSheet = false">
       <scroll-view scroll-y class="planned-scroll">
@@ -553,6 +608,18 @@ onPageScroll((event) => {
   color: var(--text-secondary);
 }
 
+.filter-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 46;
+  background: transparent;
+}
+
+.filter-anchor {
+  position: relative;
+  z-index: 49;
+}
+
 .filter-pill {
   display: flex;
   align-items: center;
@@ -567,6 +634,71 @@ onPageScroll((event) => {
 .filter-pill.active {
   background: var(--text-primary);
   color: var(--bg-card);
+}
+
+.filter-popover {
+  position: absolute;
+  top: calc(100% + 16rpx);
+  right: 0;
+  z-index: 49;
+  min-width: 360rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  border-radius: 24rpx;
+  background: var(--bg-card);
+  box-shadow:
+    0 12px 28px rgba(23, 23, 23, 0.12),
+    0 2px 8px rgba(23, 23, 23, 0.08);
+  border: 1px solid rgba(23, 23, 23, 0.05);
+  opacity: 0;
+  transform: scale(0.9);
+  transform-origin: top right;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.theme-dark .filter-popover {
+  background: var(--bg-card);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.28),
+    0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.filter-popover--active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.filter-option {
+  min-height: 84rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: var(--text-secondary);
+}
+
+.filter-option.active {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.filter-option + .filter-option {
+  border-top: 1px solid rgba(23, 23, 23, 0.04);
+}
+
+.theme-dark .filter-option + .filter-option {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.filter-option .app-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex: none;
 }
 
 .record-list {
