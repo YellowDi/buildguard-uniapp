@@ -5,12 +5,13 @@ import AppIcon from '@/components/common/app-icon.vue'
 import MaintenanceExecutionSheet from '@/components/maintenance/MaintenanceExecutionSheet.vue'
 import MaintenanceResultSheet from '@/components/maintenance/MaintenanceResultSheet.vue'
 import { fetchMaintenanceTaskDetail } from '@/shared/api/maintenance'
-import type { MaintenanceStep, MaintenanceTaskDetail } from '@/shared/types/maintenance'
+import type { MaintenanceTaskDetail } from '@/shared/types/maintenance'
 import { daysFromToday, parseTaskDate } from '@/shared/utils/date'
 import { makePhoneCall, openLocation } from '@/services/platform/device'
 import { usePageNavVars } from '@/services/platform/layout'
 import { goBack, goMaintenanceHome } from '@/services/platform/navigation'
 import { useTheme } from '@/services/platform/theme'
+import { previewImages } from '@/services/platform/media'
 
 const taskId = ref(0)
 const task = ref<MaintenanceTaskDetail | null>(null)
@@ -28,11 +29,33 @@ const navScrolled = ref(false)
 const navBarVars = usePageNavVars()
 const { isDark } = useTheme()
 
+type BottomAction = {
+  key: 'call' | 'navigate' | 'start' | 'report' | 'summary'
+  label: string
+  icon: string
+  primary?: boolean
+  fillRemaining?: boolean
+}
+
 const statusLabel = computed(() => {
   if (!task.value) return ''
   if (task.value.status === 'active') return '处理中'
   if (task.value.status === 'pending') return '待接单'
   return '已完成'
+})
+
+const statusIconName = computed(() => {
+  if (!task.value) return 'ri-time-line'
+  if (task.value.status === 'active') return 'ri-loader-2-line'
+  if (task.value.status === 'pending') return 'ri-time-line'
+  return 'ri-checkbox-circle-fill'
+})
+
+const statusIconColor = computed(() => {
+  if (!task.value) return isDark.value ? '#e5e5e5' : '#171717'
+  if (task.value.status === 'pending') return '#fa7319'
+  if (task.value.status === 'completed') return '#1fc16b'
+  return isDark.value ? '#e5e5e5' : '#171717'
 })
 
 const detailTimeText = computed(() => {
@@ -58,11 +81,36 @@ const timeRemainingLabel = computed(() => {
   return `还剩${diffDays}天`
 })
 
-function stepStatusLabel(step: MaintenanceStep) {
-  if (step.status === 'done') return '已完成'
-  if (step.status === 'active') return '处理中'
-  return '待执行'
-}
+const sourceInstructionText = computed(() => {
+  if (!task.value) return ''
+  return [task.value.dispatchReason, task.value.sourceFinding, task.value.sourceRemark].filter(Boolean).join('；')
+})
+
+const bottomActions = computed<BottomAction[]>(() => {
+  if (!task.value) return []
+  switch (task.value.status) {
+    case 'pending':
+      return [
+        { key: 'start', label: '提交开工记录', icon: 'ri-play-circle-line', primary: true, fillRemaining: true },
+        { key: 'navigate', label: '导航过去', icon: 'ri-map-pin-line' },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+      ]
+    case 'active':
+      return [
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'report', label: '提交维修结果', icon: 'ri-file-list-3-line', primary: true, fillRemaining: true },
+      ]
+    case 'completed':
+      return [
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'summary', label: '查看维修报告', icon: 'ri-file-list-3-line', primary: true, fillRemaining: true },
+      ]
+    default:
+      return []
+  }
+})
+
+const hasFillRemainingAction = computed(() => bottomActions.value.some((action) => action.fillRemaining))
 
 function loadTask(id: number) {
   loading.value = true
@@ -133,6 +181,31 @@ function openResultSheet() {
   executionVisible.value = true
 }
 
+function handleBottomAction(action: BottomAction['key']) {
+  if (!task.value) return
+  switch (action) {
+    case 'call':
+      makePhoneCall(task.value.phone)
+      return
+    case 'navigate':
+      openLocation({
+        latitude: task.value.latitude,
+        longitude: task.value.longitude,
+        name: task.value.parkName,
+        address: task.value.address,
+      })
+      return
+    case 'start':
+      openStartSheet()
+      return
+    case 'report':
+      openResultSheet()
+      return
+    case 'summary':
+      resultVisible.value = true
+  }
+}
+
 onLoad((query) => {
   taskId.value = Number(query?.id || 0)
   loadTask(taskId.value)
@@ -186,70 +259,141 @@ onPageScroll((event) => {
 
         <template v-else-if="task">
           <view class="card detail-card">
-            <view class="head-row">
-              <text class="chip">{{ statusLabel }}</text>
-              <text v-if="timeRemainingLabel" class="meta-tag">{{ timeRemainingLabel }}</text>
-            </view>
-            <text class="title">{{ task.taskName }}</text>
-            <text class="subtitle">{{ task.parkName }} · {{ task.buildingName }}</text>
-            <text class="meta">{{ detailTimeText }}</text>
-            <text class="task-copy">{{ task.location }}</text>
-          </view>
-
-          <view class="card section-card">
-            <text class="section-title">维修工单信息</text>
-            <view class="kv-row"><text class="kv-label">工单号</text><text class="kv-value">{{ task.workOrderNo }}</text></view>
-            <view class="kv-row"><text class="kv-label">问题分类</text><text class="kv-value">{{ task.issueCategory }}</text></view>
-            <view class="kv-row"><text class="kv-label">风险等级</text><text class="kv-value">{{ task.riskLevelLabel }}</text></view>
-            <view class="kv-row"><text class="kv-label">地址</text><text class="kv-value">{{ task.address }}</text></view>
-            <view class="kv-row"><text class="kv-label">联系人</text><text class="kv-value">{{ task.contact }}</text></view>
-          </view>
-
-          <view class="card section-card">
-            <text class="section-title">派单原因</text>
-            <text class="section-copy">{{ task.dispatchReason }}</text>
-            <text class="subheading">检修来源</text>
-            <text class="section-copy">{{ task.sourceInspectionItem }} · {{ task.sourceStatusLabel }}</text>
-            <text class="section-copy">{{ task.sourceDescription }}</text>
-            <text class="section-copy">影响：{{ task.sourceImpact }}</text>
-            <text v-if="task.sourceRemark" class="section-copy">备注：{{ task.sourceRemark }}</text>
-          </view>
-
-          <view class="card section-card">
-            <text class="section-title">执行步骤</text>
-            <view v-for="step in task.steps" :key="step.id" class="step-row">
-              <view class="step-dot" :class="step.status" />
-              <view class="step-copy">
-                <text class="step-title">{{ step.title }}</text>
-                <text class="step-desc">{{ step.description }}</text>
+            <view class="detail-top">
+              <view class="detail-copy">
+                <text class="detail-park">{{ task.parkName }}</text>
+                <text class="detail-name">{{ task.taskName }}</text>
               </view>
-              <text class="step-status">{{ stepStatusLabel(step) }}</text>
+              <view class="task-status-chip detail-status-chip">
+                <AppIcon :name="statusIconName" :color="statusIconColor" />
+                <text class="task-status-text">{{ statusLabel }}</text>
+              </view>
+            </view>
+
+            <view class="detail-meta-list">
+              <view class="detail-meta-row">
+                <AppIcon name="ri-map-pin-line" class="detail-meta-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
+                <text class="detail-meta-text">{{ task.buildingName }} · {{ task.location }}</text>
+              </view>
+              <view v-if="task.address" class="detail-meta-row">
+                <AppIcon name="ri-road-map-line" class="detail-meta-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
+                <text class="detail-meta-text">{{ task.address }}</text>
+              </view>
+              <view class="detail-meta-row">
+                <AppIcon name="ri-calendar-line" class="detail-meta-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
+                <text class="detail-meta-text">{{ detailTimeText }}</text>
+                <text v-if="timeRemainingLabel" class="detail-meta-tag">{{ timeRemainingLabel }}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="segment-divider detail-divider" />
+
+          <view class="card section-card source-card">
+            <text class="section-title">来源巡检问题</text>
+            <view class="source-meta-list">
+              <view class="source-meta-row">
+                <AppIcon name="ri-file-list-3-line" class="source-meta-icon" :color="isDark ? '#a3a3a3' : '#a3a3a3'" />
+                <text class="source-meta-text">{{ task.sourceInspectionTask }}</text>
+              </view>
+              <view class="source-meta-row">
+                <AppIcon name="ri-alert-line" class="source-meta-icon source-meta-icon--alert" color="#fa7319" />
+                <text class="source-meta-text">{{ task.issueCategory }} · {{ task.riskLevelLabel }}</text>
+              </view>
+            </view>
+
+            <view class="source-highlight-card">
+              <view class="source-highlight-head">
+                <text class="source-highlight-title">{{ task.sourceInspectionItem }}</text>
+                <text class="source-highlight-tag">{{ task.sourceStatusLabel }}</text>
+              </view>
+              <text v-if="sourceInstructionText" class="source-highlight-copy">{{ sourceInstructionText }}</text>
+            </view>
+
+            <view class="source-block">
+              <text class="subheading">问题描述</text>
+              <view class="info-panel">
+                <text class="info-panel-text">{{ task.sourceDescription }}</text>
+              </view>
+            </view>
+
+            <view class="source-block">
+              <text class="subheading">影响评估</text>
+              <view class="info-panel">
+                <text class="info-panel-text">{{ task.sourceImpact }}</text>
+              </view>
+            </view>
+
+            <view v-if="task.sourcePhotos?.length" class="source-photo-grid">
+              <image
+                v-for="photo in task.sourcePhotos"
+                :key="photo"
+                class="source-photo"
+                :src="photo"
+                mode="aspectFill"
+                @tap="previewImages(task.sourcePhotos || [], photo)"
+              />
             </view>
           </view>
 
           <view class="card section-card">
-            <text class="section-title">物料与安全</text>
-            <text class="subheading">工具</text>
-            <text class="section-copy">{{ task.requiredTools.join(' / ') }}</text>
-            <text class="subheading">材料</text>
-            <text class="section-copy">{{ task.requiredMaterials.join(' / ') }}</text>
-            <text class="subheading">安全注意</text>
-            <text v-for="note in task.safetyNotes" :key="note" class="section-copy">- {{ note }}</text>
+            <text class="section-title">维修处理信息</text>
+            <view class="info-grid">
+              <view class="info-grid-card">
+                <text class="info-grid-label">工单编号</text>
+                <text class="info-grid-value">{{ task.workOrderNo }}</text>
+              </view>
+              <view class="info-grid-card">
+                <text class="info-grid-label">现场联系人</text>
+                <text class="info-grid-value">{{ task.contact || '-' }}</text>
+              </view>
+            </view>
+
+            <view class="material-block">
+              <text class="material-title">工具与材料</text>
+              <view class="material-chip-list">
+                <text
+                  v-for="item in [...task.requiredTools, ...task.requiredMaterials]"
+                  :key="item"
+                  class="material-chip"
+                >
+                  {{ item }}
+                </text>
+              </view>
+            </view>
+
+            <view class="safety-block">
+              <text class="material-title">安全提醒</text>
+              <view class="safety-list">
+                <view v-for="note in task.safetyNotes" :key="note" class="safety-card">
+                  <AppIcon name="ri-shield-check-line" class="safety-icon" color="#fa7319" />
+                  <text class="safety-text">{{ note }}</text>
+                </view>
+              </view>
+            </view>
           </view>
+
         </template>
       </view>
 
-      <view v-if="task && !loading && !notFound" class="bottom-bar safe-bottom">
+      <view v-if="task && !loading && !notFound && bottomActions.length" class="bottom-bar safe-bottom">
         <view class="bottom-actions">
-          <view class="btn btn-secondary compact-btn" @tap="makePhoneCall(task.phone)">电话联系</view>
-          <view class="btn btn-secondary compact-btn" @tap="openLocation({ latitude: task.latitude, longitude: task.longitude, name: task.parkName, address: task.address })">
-            导航过去
-          </view>
           <view
-            class="btn btn-primary main-btn"
-            @tap="task.status === 'pending' ? openStartSheet() : task.status === 'active' ? openResultSheet() : (resultVisible = true)"
+            v-for="action in bottomActions"
+            :key="action.key"
+            class="detail-bottom-btn"
+            :class="[
+              action.primary ? 'detail-bottom-btn--primary' : 'detail-bottom-btn--secondary',
+              action.fillRemaining || !hasFillRemainingAction ? 'detail-bottom-btn--fill' : 'detail-bottom-btn--compact',
+            ]"
+            @tap="handleBottomAction(action.key)"
           >
-            {{ task.status === 'pending' ? '提交开工记录' : task.status === 'active' ? '提交维修结果' : '查看维修报告' }}
+            <AppIcon
+              :name="action.icon"
+              class="detail-bottom-btn__icon"
+              :color="action.primary ? (isDark ? '#171717' : '#ffffff') : (isDark ? '#a3a3a3' : '#5c5c5c')"
+            />
+            <text class="detail-bottom-btn__text">{{ action.label }}</text>
           </view>
         </view>
       </view>
@@ -280,7 +424,7 @@ onPageScroll((event) => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  padding: 0 32rpx 180rpx;
+  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 88px);
   box-sizing: border-box;
 }
 
@@ -299,136 +443,275 @@ onPageScroll((event) => {
   margin-top: 16rpx;
 }
 
-.head-row {
+.detail-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
-.title {
+.detail-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-park {
   display: block;
-  margin-top: 16rpx;
-  font-size: 36rpx;
-  line-height: 52rpx;
-  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
-.subtitle,
-.meta,
-.task-copy {
+.detail-name {
   display: block;
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  line-height: 36rpx;
+  margin-top: 2rpx;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
-.meta-tag {
-  padding: 8rpx 14rpx;
-  border-radius: 999rpx;
-  background: var(--bg-chip-info);
-  color: var(--brand-blue);
-  font-size: 22rpx;
+.detail-status-chip {
+  margin-top: 2rpx;
+}
+
+.detail-meta-list {
+  margin-top: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.detail-meta-icon {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+  flex: none;
+}
+
+.detail-meta-text {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.detail-meta-tag {
+  display: inline-flex;
+  margin-left: 8rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  background: var(--bg-chip);
+  color: var(--text-secondary);
+  font-size: 20rpx;
+  line-height: 28rpx;
+  font-weight: 500;
+}
+
+.detail-divider {
+  margin-top: 16rpx;
 }
 
 .section-title {
   display: block;
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
-.kv-row {
+.source-meta-list {
+  margin-top: 16rpx;
   display: flex;
-  justify-content: space-between;
-  gap: 20rpx;
-  padding: 18rpx 0;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
-.kv-row + .kv-row {
-  border-top: 1px solid var(--border-subtle);
-}
-
-.kv-label {
-  width: 140rpx;
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-}
-
-.kv-value {
-  flex: 1;
-  font-size: 26rpx;
-  line-height: 38rpx;
-  text-align: right;
-  color: var(--text-primary);
-}
-
-.section-copy {
-  display: block;
-  margin-top: 10rpx;
-  font-size: 26rpx;
-  line-height: 38rpx;
-  color: var(--text-primary);
-}
-
-.subheading {
-  display: block;
-  margin-top: 18rpx;
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-}
-
-.step-row {
+.source-meta-row {
   display: flex;
-  align-items: flex-start;
-  gap: 16rpx;
-  padding: 18rpx 0;
+  align-items: center;
+  gap: 8rpx;
 }
 
-.step-row + .step-row {
-  border-top: 1px solid var(--border-subtle);
+.source-meta-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex: none;
 }
 
-.step-dot {
-  width: 20rpx;
-  height: 20rpx;
-  border-radius: 999rpx;
-  background: var(--border-strong);
-  margin-top: 10rpx;
+.source-meta-icon--alert {
+  transform: scale(1.08) translateY(-0.5px);
 }
 
-.step-dot.done {
-  background: #1fc16b;
-}
-
-.step-dot.active {
-  background: var(--text-primary);
-}
-
-.step-copy {
-  flex: 1;
-}
-
-.step-title {
-  display: block;
-  font-size: 26rpx;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.step-desc {
-  display: block;
-  margin-top: 6rpx;
-  font-size: 24rpx;
-  line-height: 34rpx;
+.source-meta-text {
+  font-size: 14px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
-.step-status {
-  font-size: 22rpx;
+.source-highlight-card {
+  margin-top: 16rpx;
+  border-radius: 24rpx;
+  background: var(--bg-soft);
+  padding: 24rpx;
+}
+
+.source-highlight-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.source-highlight-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.source-highlight-tag {
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: var(--bg-card);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.source-highlight-copy {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--text-tertiary);
+}
+
+.source-block,
+.material-block,
+.safety-block {
+  margin-top: 16rpx;
+}
+
+.subheading,
+.material-title {
+  display: block;
+  margin-bottom: 6rpx;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.info-panel {
+  border-radius: 24rpx;
+  background: var(--bg-soft);
+  padding: 24rpx;
+}
+
+.info-panel-text {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-primary);
+}
+
+.source-photo-grid {
+  margin-top: 12rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.source-photo {
+  width: 100%;
+  height: 240rpx;
+  border-radius: 24rpx;
+  background: var(--bg-softer);
+}
+
+.info-grid {
+  margin-top: 16rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.info-grid-card {
+  border-radius: 24rpx;
+  background: var(--bg-soft);
+  padding: 24rpx;
+}
+
+.info-grid-label {
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+}
+
+.info-grid-value {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.material-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.material-chip {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: var(--bg-soft);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.safety-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.safety-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  border-radius: 24rpx;
+  background: #fff7e6;
+  padding: 24rpx;
+}
+
+.theme-dark .safety-card {
+  background: #3d2b1f;
+}
+
+.safety-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-top: 2rpx;
+  flex: none;
+}
+
+.safety-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
 }
 
 .bottom-bar {
@@ -436,7 +719,7 @@ onPageScroll((event) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bg-page);
+  background: var(--bg-card);
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -445,15 +728,58 @@ onPageScroll((event) => {
   margin: 0 auto;
   padding: 16rpx 32rpx 0;
   display: flex;
-  gap: 12rpx;
+  gap: 8rpx;
 }
 
-.compact-btn {
-  min-width: 160rpx;
+.detail-bottom-btn {
+  height: 40px;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
-.main-btn {
+.detail-bottom-btn--secondary {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-secondary);
+}
+
+.theme-dark .detail-bottom-btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.detail-bottom-btn--primary {
+  background: var(--text-primary);
+  color: var(--bg-card);
+}
+
+.detail-bottom-btn--compact {
+  flex: none;
+  padding: 0 16rpx;
+}
+
+.detail-bottom-btn--fill {
   flex: 1;
+  min-width: 0;
+}
+
+.detail-bottom-btn__icon {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+  transform: translateY(-2px);
+}
+
+.detail-bottom-btn__text {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 .state-icon {

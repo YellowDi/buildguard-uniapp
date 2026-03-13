@@ -122,7 +122,7 @@ function submit() {
       </view>
     </scroll-view>
 
-    <view class="sheet-footer safe-bottom">
+    <view class="sheet-footer">
       <view class="sheet-actions">
         <view class="btn btn-secondary action-btn" @tap="emit('close')">返回修改</view>
         <view class="btn btn-primary action-btn" @tap="submit">
@@ -137,6 +137,7 @@ function submit() {
 .sheet-scroll {
   max-height: 62vh;
   padding: 0 32rpx 24rpx;
+  box-sizing: border-box;
 }
 
 .field-group {
@@ -232,8 +233,10 @@ function submit() {
 }
 
 .sheet-footer {
-  padding: 24rpx 32rpx 0;
+  padding: 24rpx 32rpx calc(env(safe-area-inset-bottom, 0px) + 12px);
   border-top: 1px solid var(--border-subtle);
+  background: var(--bg-card-elevated);
+  box-sizing: border-box;
 }
 
 .sheet-actions {
