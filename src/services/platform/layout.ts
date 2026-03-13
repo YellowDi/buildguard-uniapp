@@ -18,13 +18,35 @@ let cachedMenuButtonTop: string | null = null
 let cachedHorizontalGap: string | null = null
 let cachedVerticalGap: string | null = null
 
+function getWindowMetrics() {
+  // #ifdef MP-WEIXIN
+  const weixinApi = globalThis as typeof globalThis & {
+    wx?: {
+      getWindowInfo?: () => {
+        statusBarHeight?: number
+        windowWidth?: number
+      }
+    }
+  }
+  const windowInfo = weixinApi.wx?.getWindowInfo?.()
+  return {
+    statusBarHeight: Number(windowInfo?.statusBarHeight || 0),
+    windowWidth: Number(windowInfo?.windowWidth || 0),
+  }
+  // #endif
+
+  const systemInfo = uni.getSystemInfoSync()
+  return {
+    statusBarHeight: Number(systemInfo.statusBarHeight || 0),
+    windowWidth: Number(systemInfo.windowWidth || 0),
+  }
+}
+
 function resolveSafeTopOffset() {
   if (cachedSafeTopOffset) return cachedSafeTopOffset
 
   try {
-    const systemInfo = uni.getSystemInfoSync()
-    const statusBarHeight = Number(systemInfo.statusBarHeight || 0)
-    const windowWidth = Number(systemInfo.windowWidth || 0)
+    const { statusBarHeight, windowWidth } = getWindowMetrics()
     let topOffset = statusBarHeight + 12
 
     // #ifdef MP-WEIXIN
