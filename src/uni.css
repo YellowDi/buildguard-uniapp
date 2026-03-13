@@ -256,8 +256,8 @@ page {
 .home-nav__main {
   position: absolute;
   top: var(--page-nav-row-offset, 6px);
-  left: var(--page-content-gutter, 32rpx);
-  right: var(--page-content-gutter, 32rpx);
+  left: var(--page-content-gutter, 16px);
+  right: var(--page-content-gutter, 16px);
   height: var(--page-nav-row-height, 44px);
   display: flex;
   align-items: center;

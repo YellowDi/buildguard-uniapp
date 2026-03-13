@@ -383,7 +383,7 @@ onPageScroll((event) => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  --page-content-gutter: 32rpx;
+  --page-content-gutter: 16px;
   padding: 0 var(--page-content-gutter) 24rpx;
   box-sizing: border-box;
 }

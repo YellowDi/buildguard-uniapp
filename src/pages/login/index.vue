@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import AppIcon from '@/components/common/app-icon.vue'
 import { DEMO_USERS, authenticateDemoUser, resolveHomePath, saveSession, type DemoUser } from '@/shared/auth/session'
 import { goToPage } from '@/services/platform/navigation'
+import { useTopSafeAreaVars } from '@/services/platform/layout'
 import { useTheme } from '@/services/platform/theme'
 
 const username = ref('')
@@ -10,6 +11,7 @@ const password = ref('')
 const loading = ref(false)
 const error = ref('')
 const { isDark } = useTheme()
+const topSafeAreaVars = useTopSafeAreaVars()
 
 const canSubmit = computed(() => username.value.trim() && password.value.length >= 6 && !loading.value)
 
@@ -38,7 +40,7 @@ function quickLogin(user: DemoUser) {
 
 <template>
   <view class="app-page" :class="{ 'theme-dark': isDark }">
-    <view class="shell login-shell">
+    <view class="shell login-shell" :style="topSafeAreaVars">
       <view class="login-center">
         <view class="brand">
           <image class="brand-logo" src="/static/temp_logo.png" mode="aspectFit" />
@@ -120,7 +122,7 @@ function quickLogin(user: DemoUser) {
 <style scoped>
 .login-shell {
   justify-content: center;
-  padding: 48rpx;
+  padding: calc(var(--safe-top-offset, 0px) + 24px) 16px 48rpx;
 }
 
 .login-center {

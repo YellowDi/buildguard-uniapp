@@ -424,7 +424,7 @@ onPageScroll((event) => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 88px);
+  padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 88px);
   box-sizing: border-box;
 }
 
@@ -726,7 +726,7 @@ onPageScroll((event) => {
 .bottom-actions {
   max-width: 430px;
   margin: 0 auto;
-  padding: 16rpx 32rpx 0;
+  padding: 16rpx 16px 0;
   display: flex;
   gap: 8rpx;
 }

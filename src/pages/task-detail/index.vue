@@ -618,7 +618,7 @@ onPageScroll((event) => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 88px);
+  padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 88px);
   box-sizing: border-box;
 }
 
@@ -1149,7 +1149,7 @@ onPageScroll((event) => {
 
 .detail-item-scroll {
   max-height: 70vh;
-  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
+  padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 24rpx);
   box-sizing: border-box;
 }
 
