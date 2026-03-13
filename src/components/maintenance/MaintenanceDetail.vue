@@ -125,31 +125,48 @@ const sourceInstructionText = computed(() => {
   ].filter(Boolean).join('；')
 })
 
-type BottomAction = { key: 'call' | 'start' | 'report' | 'summary'; label: string; primary?: boolean }
+type BottomAction = {
+  key: 'call' | 'navigate' | 'start' | 'report' | 'summary'
+  label: string
+  primary?: boolean
+  icon?: string
+  fillRemaining?: boolean
+}
 const bottomActions = computed((): BottomAction[] => {
   if (!task.value) return []
   switch (task.value.status) {
     case 'pending':
       return [
-        { key: 'call', label: '电话联系' },
-        { key: 'start', label: '提交开工记录', primary: true },
+        { key: 'start', label: '提交开工记录', primary: true, icon: 'ri-play-circle-line', fillRemaining: true },
+        { key: 'navigate', label: '导航过去', icon: 'ri-map-pin-line' },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
       ]
     case 'active':
       return [
-        { key: 'call', label: '电话联系' },
-        { key: 'report', label: '提交维修结果', primary: true },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'report', label: '提交维修结果', primary: true, icon: 'ri-file-list-3-line', fillRemaining: true },
       ]
     case 'completed':
       return [
-        { key: 'call', label: '电话联系' },
-        { key: 'summary', label: '查看维修报告', primary: true },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'summary', label: '查看维修报告', primary: true, icon: 'ri-file-list-3-line', fillRemaining: true },
       ]
   }
 })
 
+const hasFillRemainingAction = computed(() =>
+  bottomActions.value.some((action) => action.fillRemaining),
+)
+
 function onCall() {
   if (!task.value?.phone) return
   window.location.href = `tel:${task.value.phone}`
+}
+
+function onNavigate() {
+  if (!task.value?.address) return
+  const query = encodeURIComponent(task.value.address)
+  window.open(`https://maps.google.com/maps?q=${query}`, '_blank', 'noopener')
 }
 
 function openBeforeRecordDrawer() {
@@ -207,6 +224,9 @@ async function handleBottomAction(action: BottomAction['key']) {
   switch (action) {
     case 'call':
       onCall()
+      break
+    case 'navigate':
+      onNavigate()
       break
     case 'start':
       openBeforeRecordDrawer()
@@ -474,11 +494,15 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
           v-for="action in bottomActions"
           :key="action.key"
           type="button"
-          class="btn-base btn-md min-w-0 flex-1"
-          :class="action.primary ? 'btn-primary' : 'btn-secondary'"
-          :disabled="action.key === 'call' && !task.phone"
+          class="btn-base btn-md whitespace-nowrap"
+          :class="[
+            action.fillRemaining || !hasFillRemainingAction ? 'min-w-0 flex-1' : 'shrink-0',
+            action.primary ? 'btn-primary' : 'btn-secondary',
+          ]"
+          :disabled="(action.key === 'call' && !task.phone) || (action.key === 'navigate' && !task.address)"
           @click="handleBottomAction(action.key)"
         >
+          <i v-if="action.icon" :class="[action.icon, 'text-[18px]']" />
           <span>{{ action.label }}</span>
         </button>
       </div>
