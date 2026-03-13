@@ -4,21 +4,6 @@
       "key": "active",
       "tasks": [
         {
-          "id": 101,
-          "parkName": "华东智能制造产业园",
-          "taskName": "A栋应急照明故障修复",
-          "buildingName": "A栋",
-          "location": "B3区 2层东侧疏散通道",
-          "sourceInspectionTask": "2025 年 12 月综合巡检",
-          "sourceFinding": "2盏应急照明断电后未恢复，需当天修复。",
-          "assignee": "李电工",
-          "trade": "electric",
-          "priority": "high",
-          "deadline": "3 月 15 日前完成",
-          "plannedAt": "2026-03-12",
-          "status": "active"
-        },
-        {
           "id": 102,
           "parkName": "华南物流枢纽园区",
           "taskName": "1号仓库西侧配电箱风扇更换",
@@ -54,6 +39,21 @@
       "key": "pending",
       "title": "待接单",
       "tasks": [
+        {
+          "id": 101,
+          "parkName": "华东智能制造产业园",
+          "taskName": "A栋应急照明故障修复",
+          "buildingName": "A栋",
+          "location": "B3区 2层东侧疏散通道",
+          "sourceInspectionTask": "2025 年 12 月综合巡检",
+          "sourceFinding": "2盏应急照明断电后未恢复，需当天修复。",
+          "assignee": "李电工",
+          "trade": "electric",
+          "priority": "high",
+          "plannedAt": "2026-03-13",
+          "deadline": "3 月 16 日前完成",
+          "status": "pending"
+        },
         {
           "id": 103,
           "parkName": "华东智能制造产业园",

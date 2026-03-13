@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useBodyScrollLock } from '../../composables/useBodyScrollLock'
 
 const props = defineProps<{
   visible: boolean
+  mode: 'before' | 'after'
   beforeMedia: string[]
   afterMedia: string[]
   executionNote: string
@@ -19,6 +20,20 @@ const localAfterMedia = ref<string[]>([])
 const localExecutionNote = ref('')
 const uploadedFileByUrl = new Map<string, File>()
 const { lock, unlock } = useBodyScrollLock()
+
+const titleText = computed(() =>
+  props.mode === 'before' ? '提交开工记录' : '填写维修结果',
+)
+
+const helperText = computed(() =>
+  props.mode === 'before'
+    ? '先上传维修前照片或视频，提交后才能开始维修。'
+    : '请上传维修后照片/视频，并填写维修结果文字说明，随后生成维修报告。',
+)
+
+const submitLabel = computed(() =>
+  props.mode === 'before' ? '提交并开始维修' : '生成维修报告',
+)
 
 function isVideo(url: string) {
   return url.startsWith('data:video/') || /\.mp4($|\?)/i.test(url) || /\.mov($|\?)/i.test(url) || /\.webm($|\?)/i.test(url)
@@ -96,14 +111,19 @@ async function serializeMediaForSave(list: string[]) {
   return serialized.filter(Boolean)
 }
 
-const canSubmit = () =>
-  localBeforeMedia.value.length > 0 &&
-  localAfterMedia.value.length > 0 &&
-  localExecutionNote.value.trim() !== ''
+const canSubmit = computed(() =>
+  props.mode === 'before'
+    ? localBeforeMedia.value.length > 0
+    : localAfterMedia.value.length > 0 && localExecutionNote.value.trim() !== '',
+)
 
 async function handleSave() {
-  if (!canSubmit()) {
-    window.alert('完成维修前，需上传维修前照片/视频、维修后照片/视频，并填写维修说明。')
+  if (!canSubmit.value) {
+    window.alert(
+      props.mode === 'before'
+        ? '开始维修前，需先上传维修前照片或视频。'
+        : '生成维修报告前，需上传维修后照片或视频，并填写维修结果文字说明。',
+    )
     return
   }
 
@@ -138,10 +158,10 @@ async function handleSave() {
         <div class="flex items-center justify-between px-4 pb-3">
           <div>
             <h3 class="text-[16px] font-semibold leading-[24px] text-[#171717] dark:text-[#E5E5E5]">
-              填写维修记录
+              {{ titleText }}
             </h3>
             <p class="mt-0.5 text-[12px] leading-[18px] text-[#5C5C5C] dark:text-[#A3A3A3]">
-              需补齐维修前影像、维修后影像和文字说明，作为完工依据。
+              {{ helperText }}
             </p>
           </div>
           <button
@@ -158,6 +178,7 @@ async function handleSave() {
             <div class="flex items-center justify-between">
               <p class="text-[13px] font-medium leading-[20px] text-[#171717] dark:text-[#E5E5E5]">维修前照片 / 视频</p>
               <button
+                v-if="props.mode === 'before'"
                 type="button"
                 class="text-[12px] font-medium leading-[16px] text-[#006ADC] dark:text-[#7DB9FF]"
                 @click="triggerUpload('before')"
@@ -185,6 +206,7 @@ async function handleSave() {
                   class="h-full w-full object-cover"
                 />
                 <button
+                  v-if="props.mode === 'before'"
                   type="button"
                   class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white"
                   @click="removeMedia('before', index)"
@@ -193,6 +215,7 @@ async function handleSave() {
                 </button>
               </div>
               <button
+                v-if="props.mode === 'before'"
                 type="button"
                 class="flex h-[88px] w-[88px] flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-[#D4D4D4] bg-[#FAFAFA] dark:border-[#525252] dark:bg-[#404040]"
                 @click="triggerUpload('before')"
@@ -201,9 +224,15 @@ async function handleSave() {
                 <span class="text-[11px] leading-[14px] text-[#A3A3A3]">上传前记录</span>
               </button>
             </div>
+            <p
+              v-if="props.mode === 'after'"
+              class="mt-2 text-[12px] leading-[18px] text-[#737373] dark:text-[#A3A3A3]"
+            >
+              已提交开工影像记录 {{ localBeforeMedia.length }} 项，作为维修前依据。
+            </p>
           </div>
 
-          <div class="mt-5">
+          <div v-if="props.mode === 'after'" class="mt-5">
             <div class="flex items-center justify-between">
               <p class="text-[13px] font-medium leading-[20px] text-[#171717] dark:text-[#E5E5E5]">维修后照片 / 视频</p>
               <button
@@ -252,7 +281,7 @@ async function handleSave() {
             </div>
           </div>
 
-          <div class="mt-5">
+          <div v-if="props.mode === 'after'" class="mt-5">
             <p class="text-[13px] font-medium leading-[20px] text-[#171717] dark:text-[#E5E5E5]">维修文字说明</p>
             <textarea
               v-model="localExecutionNote"
@@ -275,7 +304,7 @@ async function handleSave() {
             class="btn-base btn-primary btn-md flex-1"
             @click="handleSave"
           >
-            <span>确认完成</span>
+            <span>{{ submitLabel }}</span>
           </button>
         </div>
       </div>

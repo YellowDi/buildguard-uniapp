@@ -17,7 +17,9 @@ const beforeMedia = ref<string[]>([])
 const afterMedia = ref<string[]>([])
 const executionNote = ref('')
 const executionDrawerVisible = ref(false)
+const executionDrawerMode = ref<'before' | 'after'>('before')
 const resultDrawerVisible = ref(false)
+const resultConfirmable = ref(false)
 
 const taskId = computed(() => Number(route.params.id))
 
@@ -113,24 +115,34 @@ const timeRemainingLabel = computed(() => {
   return `还剩${diffDays}天`
 })
 
-type BottomAction = { key: 'call' | 'accept' | 'complete' | 'summary'; label: string; primary?: boolean }
+const sourceInstructionText = computed(() => {
+  const currentTask = task.value
+  if (!currentTask) return ''
+  return [
+    currentTask.dispatchReason,
+    currentTask.sourceFinding,
+    currentTask.sourceRemark,
+  ].filter(Boolean).join('；')
+})
+
+type BottomAction = { key: 'call' | 'start' | 'report' | 'summary'; label: string; primary?: boolean }
 const bottomActions = computed((): BottomAction[] => {
   if (!task.value) return []
   switch (task.value.status) {
     case 'pending':
       return [
         { key: 'call', label: '电话联系' },
-        { key: 'accept', label: '接单处理', primary: true },
+        { key: 'start', label: '提交开工记录', primary: true },
       ]
     case 'active':
       return [
         { key: 'call', label: '电话联系' },
-        { key: 'complete', label: '标记完成', primary: true },
+        { key: 'report', label: '提交维修结果', primary: true },
       ]
     case 'completed':
       return [
         { key: 'call', label: '电话联系' },
-        { key: 'summary', label: '查看结论', primary: true },
+        { key: 'summary', label: '查看维修报告', primary: true },
       ]
   }
 })
@@ -140,36 +152,55 @@ function onCall() {
   window.location.href = `tel:${task.value.phone}`
 }
 
-function onAccept() {
+function openBeforeRecordDrawer() {
   if (!task.value || task.value.status !== 'pending') return
-  task.value.status = 'active'
-  const firstPendingStep = task.value.steps.find((step) => step.status === 'pending')
-  if (firstPendingStep) firstPendingStep.status = 'active'
+  executionDrawerMode.value = 'before'
+  executionDrawerVisible.value = true
 }
 
-async function onComplete() {
+function openAfterRecordDrawer() {
   if (!task.value || task.value.status !== 'active') return
+  executionDrawerMode.value = 'after'
   executionDrawerVisible.value = true
 }
 
 function onViewSummary() {
+  resultConfirmable.value = false
   resultDrawerVisible.value = true
 }
 
 function onSaveExecutionRecord(payload: { beforeMedia: string[]; afterMedia: string[]; executionNote: string }) {
   if (!task.value) return
-  beforeMedia.value = payload.beforeMedia
+
+  if (executionDrawerMode.value === 'before') {
+    beforeMedia.value = payload.beforeMedia
+    task.value.beforeMedia = payload.beforeMedia
+    task.value.status = 'active'
+    task.value.steps.forEach((step, index) => {
+      if (index === 0) step.status = 'done'
+      else if (index === 1) step.status = 'active'
+      else step.status = 'pending'
+    })
+    executionDrawerVisible.value = false
+    return
+  }
+
   afterMedia.value = payload.afterMedia
   executionNote.value = payload.executionNote
-  task.value.beforeMedia = payload.beforeMedia
   task.value.afterMedia = payload.afterMedia
   task.value.executionNote = payload.executionNote
+  executionDrawerVisible.value = false
+  resultConfirmable.value = true
+  resultDrawerVisible.value = true
+}
+
+function onConfirmReport() {
+  if (!task.value) return
   task.value.status = 'completed'
   task.value.completedAt = new Date().toISOString().slice(0, 10)
   task.value.steps.forEach((step) => { step.status = 'done' })
-  if (!task.value.completionSummary) task.value.completionSummary = '维修处理已完成，现场复核通过，可恢复正常使用。'
-  executionDrawerVisible.value = false
-  resultDrawerVisible.value = true
+  resultConfirmable.value = false
+  resultDrawerVisible.value = false
 }
 
 async function handleBottomAction(action: BottomAction['key']) {
@@ -177,11 +208,11 @@ async function handleBottomAction(action: BottomAction['key']) {
     case 'call':
       onCall()
       break
-    case 'accept':
-      onAccept()
+    case 'start':
+      openBeforeRecordDrawer()
       break
-    case 'complete':
-      await onComplete()
+    case 'report':
+      openAfterRecordDrawer()
       break
     case 'summary':
       onViewSummary()
@@ -195,6 +226,7 @@ async function loadTask(id: number) {
   notFound.value = false
   executionDrawerVisible.value = false
   resultDrawerVisible.value = false
+  resultConfirmable.value = false
   task.value = null
 
   if (!Number.isFinite(id) || id <= 0) {
@@ -330,15 +362,27 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
                 {{ task.sourceStatusLabel }}
               </span>
             </div>
-            <p class="mt-2 text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
-              {{ task.sourceDescription }}
-            </p>
-            <p class="mt-2 text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
-              影响说明：{{ task.sourceImpact }}
-            </p>
-            <p v-if="task.sourceRemark" class="mt-2 text-[13px] leading-[20px] text-[#737373] dark:text-[#A3A3A3]">
-              现场备注：{{ task.sourceRemark }}
-            </p>
+            <div v-if="sourceInstructionText" class="mt-2">
+              <p class="text-[13px] leading-[20px] text-[#737373] dark:text-[#A3A3A3]">
+                {{ sourceInstructionText }}
+              </p>
+            </div>
+          </div>
+          <div class="mt-3">
+            <span class="mb-1.5 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">问题描述</span>
+            <div class="rounded-xl bg-[#F5F5F5] px-3 py-3 dark:bg-[#404040]">
+              <p class="text-[14px] leading-[22px] text-[#171717] dark:text-[#E5E5E5]">
+                {{ task.sourceDescription }}
+              </p>
+            </div>
+          </div>
+          <div class="mt-3">
+            <span class="mb-1.5 block text-[13px] font-medium leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">影响评估</span>
+            <div class="rounded-xl bg-[#F5F5F5] px-3 py-3 dark:bg-[#404040]">
+              <p class="text-[14px] leading-[22px] text-[#171717] dark:text-[#E5E5E5]">
+                {{ task.sourceImpact }}
+              </p>
+            </div>
           </div>
           <div v-if="task.sourcePhotos?.length" class="mt-3 grid grid-cols-2 gap-2">
             <img
@@ -349,12 +393,6 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
               class="h-[120px] w-full rounded-xl object-cover"
             />
           </div>
-          <p class="mt-3 rounded-xl bg-[#F5F5F5] px-3 py-3 text-[13px] leading-[20px] text-[#5C5C5C] dark:bg-[#404040] dark:text-[#A3A3A3]">
-            {{ task.dispatchReason }}
-          </p>
-          <p class="mt-3 text-[13px] leading-[20px] text-[#5C5C5C] dark:text-[#A3A3A3]">
-            异常描述：{{ task.sourceFinding }}
-          </p>
         </div>
 
         <div class="card-shadow mt-4 rounded-xl bg-white p-4 dark:bg-[#262626]">
@@ -397,7 +435,7 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
             </div>
           </div>
         </div>
-        <div class="card-shadow mt-4 overflow-hidden rounded-xl bg-white dark:bg-[#262626]">
+        <div class="card-shadow maintenance-last-card mt-4 overflow-hidden rounded-xl bg-white dark:bg-[#262626]">
           <div class="px-4 py-4">
             <h2 class="text-[16px] font-bold leading-[24px] text-[#171717] dark:text-[#E5E5E5]">处理步骤</h2>
           </div>
@@ -429,7 +467,7 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
 
     <div
       v-if="task && bottomActions.length"
-      class="bottom-actions shrink-0 border-t border-[rgba(0,0,0,0.08)] bg-white p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] dark:border-white/10 dark:bg-[#262626]"
+      class="bottom-actions shrink-0 bg-white p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] dark:bg-[#262626]"
     >
       <div class="flex gap-2">
         <button
@@ -448,6 +486,7 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
 
     <MaintenanceExecutionDrawer
       :visible="executionDrawerVisible"
+      :mode="executionDrawerMode"
       :before-media="beforeMedia"
       :after-media="afterMedia"
       :execution-note="executionNote"
@@ -458,7 +497,9 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
     <MaintenanceResultDrawer
       :visible="resultDrawerVisible"
       :task="task"
+      :confirmable="resultConfirmable"
       @close="resultDrawerVisible = false"
+      @confirm="onConfirmReport"
     />
   </section>
 </template>
@@ -473,6 +514,15 @@ watch(taskId, (id) => { loadTask(id) }, { immediate: true })
     0px 10px 10px -5px rgba(23, 23, 23, 0.04),
     0px 20px 20px -10px rgba(23, 23, 23, 0.04),
     inset 0px -1px 1px -0.5px rgba(23, 23, 23, 0.06);
+}
+
+.maintenance-last-card {
+  box-shadow:
+    0px 1px 1px -0.5px rgba(23, 23, 23, 0.04),
+    0px 3px 3px -1.5px rgba(23, 23, 23, 0.04),
+    0px 6px 6px -3px rgba(23, 23, 23, 0.04),
+    0px 10px 10px -5px rgba(23, 23, 23, 0.04),
+    0px 20px 20px -10px rgba(23, 23, 23, 0.04);
 }
 
 .segment-divider {

@@ -11,9 +11,9 @@
     "assignee": "李电工",
     "trade": "electric",
     "priority": "high",
-    "deadline": "3 月 15 日前完成",
-    "plannedAt": "2026-03-12",
-    "status": "active",
+    "deadline": "3 月 16 日前完成",
+    "plannedAt": "2026-03-13",
+    "status": "pending",
     "contact": "陈主管",
     "phone": "13800001234",
     "issueCategory": "应急照明",
@@ -32,12 +32,9 @@
     "requiredTools": ["绝缘万用表", "折叠人字梯", "绝缘螺丝刀"],
     "requiredMaterials": ["LED应急灯电源模块", "接线端子", "备用灯管"],
     "safetyNotes": ["检修前需先切断照明支路电源", "施工区域需设置临时警示围挡"],
-    "beforeMedia": [
-      "https://picsum.photos/seed/buildguard-5005-a/480/320"
-    ],
     "steps": [
-      { "id": 1, "title": "到场复核故障", "description": "核对断电切换状态与灯具回路编号。", "status": "done" },
-      { "id": 2, "title": "更换损坏模块", "description": "拆检两盏应急灯，更换故障驱动与电池模块。", "status": "active" },
+      { "id": 1, "title": "到场复核故障", "description": "核对断电切换状态与灯具回路编号，并先提交维修前影像记录。", "status": "pending" },
+      { "id": 2, "title": "更换损坏模块", "description": "拆检两盏应急灯，更换故障驱动与电池模块。", "status": "pending" },
       { "id": 3, "title": "断电联动测试", "description": "恢复送电后进行断电切换和亮度测试。", "status": "pending" }
     ]
   },
@@ -78,9 +75,9 @@
       "https://picsum.photos/seed/buildguard-maint-102-a/480/320"
     ],
     "steps": [
-      { "id": 1, "title": "停电挂牌", "description": "对西侧配电箱执行停电挂牌和验电。", "status": "done" },
-      { "id": 2, "title": "拆换风扇", "description": "更换异常风扇并同步更换滤网。", "status": "active" },
-      { "id": 3, "title": "复测温升", "description": "恢复运行后记录30分钟温升数据。", "status": "pending" }
+      { "id": 1, "title": "停电挂牌", "description": "已提交维修前影像，并对西侧配电箱执行停电挂牌和验电。", "status": "done" },
+      { "id": 2, "title": "拆换风扇", "description": "已完成异常风扇更换，并同步更换滤网。", "status": "done" },
+      { "id": 3, "title": "复测温升", "description": "恢复运行后记录 30 分钟温升数据，并补充维修后影像和结果说明。", "status": "active" }
     ]
   },
   "103": {
