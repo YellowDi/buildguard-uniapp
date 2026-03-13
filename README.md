@@ -19,4 +19,3 @@ pnpm build:h5
 ## 说明
 
 - 当前仓库仅负责 `uni-app` 版本。
-- H5 Vue3 版本已保留在原 `buildguard` 仓库中。

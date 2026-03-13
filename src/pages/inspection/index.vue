@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
 import UserCardMenu from '@/components/common/UserCardMenu.vue'
 import { getStoredSession, clearSession } from '@/shared/auth/session'
@@ -30,6 +31,12 @@ const filteredCompletedTasks = computed(() => {
   const tasks = completedSection.value?.tasks ?? []
   return selectedPark.value ? tasks.filter((task) => task.parkName === selectedPark.value) : tasks
 })
+
+function formatPlanDate(raw: string) {
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return raw
+  return `${Number(match[2])} 月 ${Number(match[3])} 日`
+}
 
 async function loadTasks() {
   loading.value = true
@@ -86,12 +93,12 @@ onShow(() => {
         </view>
 
         <view v-if="loading" class="state-card">
-          <text class="app-icon ri-loader-4-line state-icon spinner" />
+          <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
           <text class="text-muted">正在加载任务列表…</text>
         </view>
 
         <view v-else-if="errorMessage" class="state-card">
-          <text class="app-icon ri-error-warning-line state-icon error" />
+          <AppIcon name="ri-error-warning-line" class="state-icon error" color="#e5484d" />
           <text class="text-muted">{{ errorMessage }}</text>
           <view class="btn btn-primary retry-btn" @tap="loadTasks">重试</view>
         </view>
@@ -107,7 +114,9 @@ onShow(() => {
             </text>
           </view>
           <view class="card empty-card">
-            <text class="app-icon ri-survey-line empty-icon" />
+            <view class="empty-icon-wrap">
+              <AppIcon name="ri-survey-line" class="empty-icon" :color="isDark ? '#a3a3a3' : '#5c5c5c'" />
+            </view>
             <text class="empty-title">暂无检修任务</text>
             <text class="empty-copy">
               {{ isEmptyDemo
@@ -132,15 +141,15 @@ onShow(() => {
                   <text class="task-name">{{ task.taskName }}</text>
                   <text v-if="task.address" class="task-address">{{ task.address }}</text>
                 </view>
-                <view class="status-chip">
-                  <text class="app-icon ri-loader-2-line" />
-                  <text>{{ task.deadline }}</text>
+                <view class="task-status-chip">
+                  <AppIcon name="ri-loader-2-line" :color="isDark ? '#e5e5e5' : '#171717'" />
+                  <text class="task-status-text">{{ task.deadline }}</text>
                 </view>
               </view>
               <view class="btn btn-primary inline-btn">开始巡检</view>
             </view>
 
-            <view class="divider" />
+            <view class="segment-divider" />
 
             <view class="pending-wrap">
               <view
@@ -156,23 +165,23 @@ onShow(() => {
                     <text class="task-name">{{ task.taskName }}</text>
                     <text v-if="task.address" class="task-address">{{ task.address }}</text>
                   </view>
-                  <view class="status-chip pending">
-                    <text class="app-icon ri-time-fill" />
-                    <text>{{ task.deadline }}</text>
+                  <view class="task-status-chip">
+                    <AppIcon name="ri-time-fill" color="#fa7319" />
+                    <text class="task-status-text">{{ task.deadline }}</text>
                   </view>
                 </view>
               </view>
             </view>
 
             <view class="card-foot">
-              <view class="btn btn-secondary" @tap="showPlannedSheet = true">查看更多计划巡检任务</view>
+              <view class="btn btn-surface" @tap="showPlannedSheet = true">查看更多计划巡检任务</view>
             </view>
           </view>
 
           <view class="record-head">
             <text class="record-title">巡检记录</text>
-            <view class="filter-pill" @tap="showFilterSheet = true">
-              <text class="app-icon ri-filter-3-line" />
+            <view class="filter-pill" :class="{ active: !!selectedPark }" @tap="showFilterSheet = true">
+              <AppIcon name="ri-filter-3-line" :color="selectedPark ? (isDark ? '#171717' : '#ffffff') : isDark ? '#a3a3a3' : '#5c5c5c'" />
               <text>{{ selectedPark || '园区筛选' }}</text>
             </view>
           </view>
@@ -190,9 +199,9 @@ onShow(() => {
                   <text class="task-name">{{ task.taskName }}</text>
                   <text v-if="task.address" class="task-address">{{ task.address }}</text>
                 </view>
-                <view class="status-chip complete">
-                  <text class="app-icon ri-checkbox-circle-fill" />
-                  <text>{{ task.completedAt }}</text>
+                <view class="task-status-chip">
+                  <AppIcon name="ri-checkbox-circle-fill" color="#1fc16b" />
+                  <text class="task-status-text">{{ task.completedAt }}</text>
                 </view>
               </view>
             </view>
@@ -202,24 +211,50 @@ onShow(() => {
     </view>
 
     <BaseSheet :visible="showFilterSheet" title="筛选园区" @close="showFilterSheet = false">
-      <view class="sheet-list">
-        <view class="sheet-item" @tap="selectedPark = null; showFilterSheet = false">全部园区</view>
+      <view class="sheet-option-list">
+        <view class="sheet-option" :class="{ active: !selectedPark }" @tap="selectedPark = null; showFilterSheet = false">
+          <text>全部园区</text>
+          <text class="sheet-option-subtext">显示全部记录</text>
+        </view>
         <view
           v-for="park in parkNames"
           :key="park"
-          class="sheet-item"
+          class="sheet-option"
+          :class="{ active: selectedPark === park }"
           @tap="selectedPark = park; showFilterSheet = false"
         >
-          {{ park }}
+          <text>{{ park }}</text>
+          <text class="sheet-option-subtext">仅查看该园区</text>
         </view>
       </view>
     </BaseSheet>
 
-    <BaseSheet :visible="showPlannedSheet" title="计划巡检任务" @close="showPlannedSheet = false">
+    <BaseSheet :visible="showPlannedSheet" title="未来计划巡检任务" @close="showPlannedSheet = false">
       <scroll-view scroll-y class="planned-scroll">
-        <view v-for="task in plannedTasks" :key="task.id" class="sheet-plan">
-          <text class="sheet-plan-title">{{ task.taskName }}</text>
-          <text class="sheet-plan-copy">{{ task.parkName }} · {{ task.deadline }}</text>
+        <view class="timeline-sheet">
+          <view v-if="!plannedTasks.length" class="timeline-empty">暂无计划任务</view>
+          <view v-else class="timeline-list">
+            <view v-for="(task, index) in plannedTasks" :key="task.id" class="timeline-row" @tap="goTaskDetail(task.id)">
+              <view class="timeline-track">
+                <view class="timeline-dot" :class="{ active: task.status === 'active' }" />
+                <view v-if="index < plannedTasks.length - 1" class="timeline-line" />
+              </view>
+              <view class="timeline-copy">
+                <text class="timeline-date">{{ formatPlanDate(task.plannedAt || task.deadline || '') }}</text>
+                <view class="timeline-heading">
+                  <text class="timeline-title">{{ task.parkName }}</text>
+                  <view class="task-status-chip">
+                    <AppIcon
+                      :name="task.status === 'active' ? 'ri-loader-2-line' : 'ri-time-fill'"
+                      :color="task.status === 'active' ? (isDark ? '#e5e5e5' : '#171717') : '#fa7319'"
+                    />
+                    <text class="task-status-text">{{ task.status === 'active' ? '进行中' : '待完成' }}</text>
+                  </view>
+                </view>
+                <text class="timeline-subtitle">{{ task.taskName }}</text>
+              </view>
+            </view>
+          </view>
         </view>
       </scroll-view>
     </BaseSheet>
@@ -256,6 +291,7 @@ onShow(() => {
 .brand-name {
   font-size: 32rpx;
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 .state-card,
@@ -276,12 +312,23 @@ onShow(() => {
   margin-top: 16rpx;
 }
 
+.empty-icon-wrap {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 32rpx;
+  background: var(--bg-softer);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .intro-title,
 .empty-title {
   display: block;
   margin-top: 16rpx;
   font-size: 36rpx;
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 .intro-copy,
@@ -290,7 +337,7 @@ onShow(() => {
   margin-top: 12rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .empty-copy {
@@ -301,7 +348,7 @@ onShow(() => {
 .empty-icon,
 .state-icon {
   font-size: 56rpx;
-  color: #a3a3a3;
+  color: var(--text-quaternary);
 }
 
 .state-icon.error {
@@ -324,7 +371,7 @@ onShow(() => {
 }
 
 .task-item.divided {
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .task-head {
@@ -344,6 +391,7 @@ onShow(() => {
   font-size: 30rpx;
   line-height: 42rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .task-name,
@@ -352,48 +400,22 @@ onShow(() => {
   margin-top: 8rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
-}
-
-.status-chip {
-  flex-shrink: 0;
-  padding: 10rpx 16rpx;
-  border-radius: 14rpx;
-  border: 1px solid #ebebeb;
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  font-size: 22rpx;
-  background: #fff;
-}
-
-.status-chip.pending {
-  color: #fa7319;
-}
-
-.status-chip.complete {
-  color: #1fc16b;
+  color: var(--text-secondary);
 }
 
 .inline-btn {
   height: 80rpx;
 }
 
-.divider {
-  height: 12rpx;
-  background: rgba(0, 0, 0, 0.05);
-  margin: 0 -24rpx;
-}
-
 .pending-wrap {
   margin: 0 -24rpx;
   padding: 0 24rpx;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--bg-soft);
 }
 
 .card-foot {
   padding-top: 24rpx;
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .record-head {
@@ -406,7 +428,7 @@ onShow(() => {
 .record-title {
   font-size: 34rpx;
   font-weight: 700;
-  color: rgba(60, 60, 67, 0.6);
+  color: var(--text-secondary);
 }
 
 .filter-pill {
@@ -415,53 +437,22 @@ onShow(() => {
   gap: 8rpx;
   padding: 10rpx 18rpx;
   border-radius: 999rpx;
-  background: rgba(0, 0, 0, 0.06);
+  background: transparent;
   font-size: 22rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
+}
+
+.filter-pill.active {
+  background: var(--text-primary);
+  color: var(--bg-card);
 }
 
 .record-list {
   padding-bottom: 24rpx;
 }
 
-.sheet-list {
-  padding: 0 32rpx 24rpx;
-}
-
-.sheet-item {
-  height: 84rpx;
-  display: flex;
-  align-items: center;
-  font-size: 28rpx;
-}
-
-.sheet-item + .sheet-item {
-  border-top: 1px solid #ebebeb;
-}
-
 .planned-scroll {
   max-height: 60vh;
-  padding: 0 32rpx 24rpx;
-}
-
-.sheet-plan + .sheet-plan {
-  margin-top: 16rpx;
-  padding-top: 16rpx;
-  border-top: 1px solid #ebebeb;
-}
-
-.sheet-plan-title {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.sheet-plan-copy {
-  display: block;
-  margin-top: 6rpx;
-  font-size: 24rpx;
-  line-height: 34rpx;
-  color: #5c5c5c;
 }
 
 .spinner {

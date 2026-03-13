@@ -110,6 +110,7 @@ function statusClass(item: CheckItem) {
   margin-bottom: 14rpx;
   font-size: 28rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .report-category {
@@ -129,6 +130,7 @@ function statusClass(item: CheckItem) {
   font-size: 28rpx;
   line-height: 40rpx;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .report-desc {
@@ -136,13 +138,13 @@ function statusClass(item: CheckItem) {
   margin-top: 4rpx;
   font-size: 22rpx;
   line-height: 32rpx;
-  color: #737373;
+  color: var(--text-tertiary);
 }
 
 .report-item + .report-item {
   margin-top: 18rpx;
   padding-top: 18rpx;
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .report-item-row {
@@ -157,24 +159,31 @@ function statusClass(item: CheckItem) {
   min-width: 0;
   font-size: 26rpx;
   line-height: 38rpx;
+  color: var(--text-primary);
 }
 
 .report-item-status {
-  font-size: 24rpx;
-  line-height: 36rpx;
-  color: #5c5c5c;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  background: var(--bg-chip);
+  color: var(--text-secondary);
 }
 
 .report-item-status.ok {
-  color: #1fc16b;
+  background: var(--status-success-soft);
+  color: var(--status-success);
 }
 
 .report-item-status.focus {
-  color: #fa7319;
+  background: var(--status-warning-soft);
+  color: var(--status-warning);
 }
 
 .report-item-status.risk {
-  color: #e5484d;
+  background: var(--status-danger-soft);
+  color: var(--status-danger);
 }
 
 .report-note {
@@ -182,7 +191,7 @@ function statusClass(item: CheckItem) {
   margin-top: 8rpx;
   font-size: 24rpx;
   line-height: 34rpx;
-  color: #5c5c5c;
+  color: var(--text-secondary);
 }
 
 .thumb-row {
@@ -196,6 +205,6 @@ function statusClass(item: CheckItem) {
   width: 140rpx;
   height: 140rpx;
   border-radius: 18rpx;
-  background: #f5f5f5;
+  background: var(--bg-softer);
 }
 </style>

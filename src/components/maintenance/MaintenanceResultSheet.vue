@@ -56,12 +56,16 @@ const emit = defineEmits<{
 
       <view class="block">
         <text class="label">维修文字说明</text>
-        <text class="copy">{{ executionNote || '暂无说明' }}</text>
+        <view class="copy-card">
+          <text class="copy">{{ executionNote || '暂无说明' }}</text>
+        </view>
       </view>
 
       <view v-if="completionSummary" class="block">
         <text class="label">维修结论</text>
-        <text class="copy">{{ completionSummary }}</text>
+        <view class="copy-card">
+          <text class="copy">{{ completionSummary }}</text>
+        </view>
       </view>
     </scroll-view>
 
@@ -87,13 +91,20 @@ const emit = defineEmits<{
   margin-bottom: 14rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  color: #5c5c5c;
+  color: var(--text-primary);
+}
+
+.copy-card {
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: var(--bg-softer);
 }
 
 .copy {
   display: block;
   font-size: 28rpx;
   line-height: 40rpx;
+  color: var(--text-secondary);
 }
 
 .thumb-row {
@@ -106,11 +117,11 @@ const emit = defineEmits<{
   width: 176rpx;
   height: 176rpx;
   border-radius: 20rpx;
-  background: #f5f5f5;
+  background: var(--bg-softer);
 }
 
 .sheet-footer {
   padding: 24rpx 32rpx 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-subtle);
 }
 </style>
