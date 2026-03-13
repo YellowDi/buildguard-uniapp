@@ -57,6 +57,13 @@ const progressPercent = computed(() => (totalItems.value ? Math.round((checkedIt
 const sectionTitle = computed(() =>
   currentBuilding.value ? `${currentBuilding.value.name} · 巡检项目` : '巡检项目',
 )
+type BottomAction = {
+  key: 'start' | 'navigate' | 'call' | 'continue' | 'submit' | 'report'
+  label: string
+  icon: string
+  primary?: boolean
+  fillRemaining?: boolean
+}
 
 const statusLabel = computed(() => {
   if (!task.value) return ''
@@ -117,6 +124,38 @@ const firstUncheckedItem = computed(() => {
   }
   return null
 })
+
+const bottomActions = computed<BottomAction[]>(() => {
+  if (!task.value) return []
+  switch (task.value.status) {
+    case 'pending':
+      return [
+        { key: 'start', label: '开始巡检', icon: 'ri-play-circle-line', primary: true, fillRemaining: true },
+        { key: 'navigate', label: '导航过去', icon: 'ri-map-pin-line' },
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+      ]
+    case 'active':
+      if (progressPercent.value === 100) {
+        return [
+          { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+          { key: 'submit', label: '提交', icon: 'ri-check-double-line', primary: true, fillRemaining: true },
+        ]
+      }
+      return [
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'continue', label: '继续巡检', icon: 'ri-play-circle-line', primary: true, fillRemaining: true },
+      ]
+    case 'completed':
+      return [
+        { key: 'call', label: '电话联系', icon: 'ri-phone-line' },
+        { key: 'report', label: '查看报告', icon: 'ri-file-list-3-line', primary: true, fillRemaining: true },
+      ]
+    default:
+      return [{ key: 'call', label: '电话联系', icon: 'ri-phone-line' }]
+  }
+})
+
+const hasFillRemainingAction = computed(() => bottomActions.value.some((action) => action.fillRemaining))
 
 function categoryStats(category: InspectionCategory) {
   const total = category.items.length
@@ -220,6 +259,32 @@ function continueInspection() {
     return
   }
   openEditor(firstUncheckedItem.value)
+}
+
+function handleBottomAction(actionKey: BottomAction['key']) {
+  if (!task.value) return
+  switch (actionKey) {
+    case 'start':
+    case 'continue':
+      continueInspection()
+      return
+    case 'navigate':
+      openLocation({
+        latitude: task.value.latitude,
+        longitude: task.value.longitude,
+        name: task.value.parkName,
+        address: task.value.address,
+      })
+      return
+    case 'call':
+      makePhoneCall(task.value.phone)
+      return
+    case 'submit':
+      submitTask()
+      return
+    case 'report':
+      reportVisible.value = true
+  }
 }
 
 function loadTask(id: number) {
@@ -368,12 +433,9 @@ onPageScroll((event) => {
                 <text v-if="expandedCategoryIds.includes(category.id) && category.description" class="category-desc">{{ category.description }}</text>
               </view>
               <view class="category-side">
-                  <AppIcon
-                    name="ri-arrow-down-s-line"
-                    :color="isDark ? '#a3a3a3' : '#5c5c5c'"
-                    class="category-arrow"
-                    :class="{ rotated: expandedCategoryIds.includes(category.id) }"
-                  />
+                <view class="category-arrow-wrap" :class="{ rotated: expandedCategoryIds.includes(category.id) }">
+                  <view class="category-arrow-glyph" />
+                </view>
               </view>
             </view>
 
@@ -390,12 +452,15 @@ onPageScroll((event) => {
                 @tap="openEditor(item)"
               >
                 <view class="item-state-mark">
+                  <view v-if="item.status === 'normal'" class="item-state-badge item-state-badge--normal">
+                    <view class="item-state-check" />
+                  </view>
                   <AppIcon
-                    v-if="item.status !== 'unchecked'"
+                    v-else-if="item.status !== 'unchecked'"
                     :name="itemStatusIcon(item.status)"
                     class="item-state-icon"
                     :class="itemStatusClass(item.status)"
-                    :color="item.status === 'normal' ? '#1fc16b' : item.status === 'focus' ? '#fa7319' : '#e5484d'"
+                    :color="item.status === 'focus' ? '#fa7319' : '#e5484d'"
                   />
                   <view v-else class="item-state-ring" />
                 </view>
@@ -410,17 +475,24 @@ onPageScroll((event) => {
         </template>
       </view>
 
-      <view v-if="task && !loading && !notFound" class="bottom-bar safe-bottom">
+      <view v-if="task && !loading && !notFound && bottomActions.length" class="bottom-bar">
         <view class="bottom-actions">
-          <view class="btn btn-secondary compact-btn" @tap="makePhoneCall(task.phone)">电话联系</view>
-          <view class="btn btn-secondary compact-btn" @tap="openLocation({ latitude: task.latitude, longitude: task.longitude, name: task.parkName, address: task.address })">
-            导航过去
-          </view>
           <view
-            class="btn btn-primary main-btn"
-            @tap="task.status === 'completed' ? (reportVisible = true) : progressPercent === 100 ? submitTask() : continueInspection()"
+            v-for="action in bottomActions"
+            :key="action.key"
+            class="detail-bottom-btn"
+            :class="[
+              action.primary ? 'detail-bottom-btn--primary' : 'detail-bottom-btn--secondary',
+              action.fillRemaining || !hasFillRemainingAction ? 'detail-bottom-btn--fill' : 'detail-bottom-btn--compact',
+            ]"
+            @tap="handleBottomAction(action.key)"
           >
-            {{ task.status === 'completed' ? '查看报告' : progressPercent === 100 ? '提交' : '继续巡检' }}
+            <AppIcon
+              :name="action.icon"
+              class="detail-bottom-btn__icon"
+              :color="action.primary ? (isDark ? '#171717' : '#ffffff') : (isDark ? '#a3a3a3' : '#5c5c5c')"
+            />
+            <text class="detail-bottom-btn__text">{{ action.label }}</text>
           </view>
         </view>
       </view>
@@ -439,7 +511,7 @@ onPageScroll((event) => {
 <style scoped>
 .page-scroll {
   flex: 1;
-  padding: 0 32rpx 180rpx;
+  padding: 0 32rpx calc(env(safe-area-inset-bottom, 0px) + 88px);
   box-sizing: border-box;
 }
 
@@ -689,14 +761,28 @@ onPageScroll((event) => {
   white-space: nowrap;
 }
 
-.category-arrow {
-  width: 24px;
-  height: 24px;
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+.category-arrow-wrap {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms ease-out;
   transform: rotate(0deg);
+  transform-origin: center center;
 }
 
-.category-arrow.rotated {
+.category-arrow-glyph {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--text-tertiary);
+  border-bottom: 2px solid var(--text-tertiary);
+  box-sizing: border-box;
+  transform: rotate(45deg) translateY(-1px);
+  transform-origin: center center;
+}
+
+.category-arrow-wrap.rotated {
   transform: rotate(180deg);
 }
 
@@ -741,7 +827,23 @@ onPageScroll((event) => {
   right: 24rpx;
   top: 0;
   height: 1px;
-  background: var(--border-subtle);
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(23, 23, 23, 0.1) 0,
+    rgba(23, 23, 23, 0.1) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.theme-dark .item-row + .item-row::before {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.12) 0,
+    rgba(255, 255, 255, 0.12) 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 
 .item-state-mark {
@@ -751,6 +853,29 @@ onPageScroll((event) => {
   align-items: center;
   justify-content: center;
   flex: none;
+}
+
+.item-state-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.item-state-badge--normal {
+  background: var(--status-success);
+}
+
+.item-state-check {
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-sizing: border-box;
+  transform: rotate(-45deg) translateY(-0.5px);
 }
 
 .item-state-icon {
@@ -812,24 +937,74 @@ onPageScroll((event) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bg-page);
-  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  border-top: 1px solid rgba(23, 23, 23, 0.08);
+}
+
+.theme-dark .bottom-bar {
+  background: var(--bg-card);
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .bottom-actions {
   max-width: 430px;
   margin: 0 auto;
-  padding: 16rpx 32rpx 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex;
-  gap: 12rpx;
+  gap: 8px;
 }
 
-.compact-btn {
-  min-width: 160rpx;
+.detail-bottom-btn {
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
 }
 
-.main-btn {
+.detail-bottom-btn--compact {
+  flex: none;
+  min-width: 112px;
+  padding: 0 14px;
+}
+
+.detail-bottom-btn--fill {
+  min-width: 0;
   flex: 1;
+  padding: 0 16px;
+}
+
+.detail-bottom-btn--primary {
+  background: var(--text-primary);
+  color: var(--bg-card);
+}
+
+.theme-dark .detail-bottom-btn--primary {
+  background: #e5e5e5;
+  color: #171717;
+}
+
+.detail-bottom-btn--secondary {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-secondary);
+}
+
+.theme-dark .detail-bottom-btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.detail-bottom-btn__icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.detail-bottom-btn__text {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 .state-icon {

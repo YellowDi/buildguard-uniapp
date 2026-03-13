@@ -8,6 +8,7 @@ const props = defineProps<{
   title?: string
   subtitle?: string
   maxHeight?: string
+  showHeaderDivider?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -57,7 +58,7 @@ onBeforeUnmount(() => {
     <view class="overlay" :class="`overlay--${phase}`" @tap="emit('close')" />
     <view class="sheet-panel" :class="`sheet-panel--${phase}`" :style="{ maxHeight: maxHeight || '88vh' }">
       <view class="sheet-handle" />
-      <view class="sheet-header">
+      <view class="sheet-header" :class="{ 'sheet-header--plain': props.showHeaderDivider === false }">
         <view class="sheet-header-copy">
           <text v-if="title" class="sheet-title">{{ title }}</text>
           <text v-if="subtitle" class="sheet-subtitle">{{ subtitle }}</text>
@@ -80,6 +81,12 @@ onBeforeUnmount(() => {
   gap: 24rpx;
   border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 24rpx;
+}
+
+.sheet-header--plain {
+  padding-bottom: 20rpx;
+  border-bottom: none;
+  margin-bottom: 12rpx;
 }
 
 .sheet-header-copy {
