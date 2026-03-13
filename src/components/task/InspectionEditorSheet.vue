@@ -60,7 +60,7 @@ function submit() {
   <BaseSheet
     :visible="visible"
     :title="item?.name || '巡检项'"
-    subtitle="填写现场状态、照片和说明"
+    :show-header-divider="false"
     @close="emit('close')"
   >
     <scroll-view scroll-y class="sheet-scroll">
@@ -72,6 +72,7 @@ function submit() {
             :class="{ active: selectedStatus === 'normal', normal: selectedStatus === 'normal' }"
             @tap="selectedStatus = 'normal'"
           >
+            <AppIcon name="ri-checkbox-circle-fill" class="status-icon" :color="selectedStatus === 'normal' ? '#1fc16b' : (isDark ? '#a3a3a3' : '#5c5c5c')" />
             <text class="status-text">一切正常</text>
           </view>
           <view
@@ -79,6 +80,7 @@ function submit() {
             :class="{ active: selectedStatus === 'focus', focus: selectedStatus === 'focus' }"
             @tap="selectedStatus = 'focus'"
           >
+            <AppIcon name="ri-alert-line" class="status-icon" :color="selectedStatus === 'focus' ? '#fa7319' : (isDark ? '#a3a3a3' : '#5c5c5c')" />
             <text class="status-text">需重点关注</text>
           </view>
           <view
@@ -86,6 +88,7 @@ function submit() {
             :class="{ active: selectedStatus === 'risk', risk: selectedStatus === 'risk' }"
             @tap="selectedStatus = 'risk'"
           >
+            <AppIcon name="ri-error-warning-fill" class="status-icon" :color="selectedStatus === 'risk' ? '#e5484d' : (isDark ? '#a3a3a3' : '#5c5c5c')" />
             <text class="status-text">存在风险</text>
           </view>
         </view>
@@ -128,8 +131,8 @@ function submit() {
       </view>
     </scroll-view>
 
-    <view class="sheet-footer safe-bottom">
-      <view class="btn btn-primary" @tap="submit">提交结果</view>
+    <view class="sheet-footer">
+      <view class="btn btn-primary sheet-submit-btn" @tap="submit">提交结果</view>
     </view>
   </BaseSheet>
 </template>
@@ -138,6 +141,7 @@ function submit() {
 .sheet-scroll {
   max-height: 60vh;
   padding: 0 32rpx 24rpx;
+  box-sizing: border-box;
 }
 
 .field-group {
@@ -159,18 +163,30 @@ function submit() {
 
 .status-card {
   flex: 1;
-  min-height: 96rpx;
-  border-radius: 20rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
   border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
   background: var(--bg-card);
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.status-icon {
+  width: 36rpx;
+  height: 36rpx;
+  flex: none;
 }
 
 .status-text {
-  font-size: 24rpx;
-  line-height: 34rpx;
+  font-size: 26rpx;
+  line-height: 40rpx;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
@@ -211,7 +227,7 @@ function submit() {
 .photo-upload {
   width: 152rpx;
   height: 152rpx;
-  border-radius: 20rpx;
+  border-radius: 16rpx;
   overflow: hidden;
   position: relative;
 }
@@ -261,7 +277,7 @@ function submit() {
 .text-area {
   width: 100%;
   min-height: 176rpx;
-  border-radius: 20rpx;
+  border-radius: 16rpx;
   background: var(--bg-softer);
   padding: 24rpx;
   box-sizing: border-box;
@@ -271,7 +287,15 @@ function submit() {
 }
 
 .sheet-footer {
-  padding: 24rpx 32rpx 0;
+  padding: 24rpx 32rpx calc(env(safe-area-inset-bottom) + 12px);
   border-top: 1px solid var(--border-subtle);
+  box-sizing: border-box;
+}
+
+.sheet-submit-btn {
+  height: 80rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
 }
 </style>
