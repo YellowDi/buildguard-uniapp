@@ -25,6 +25,7 @@ const activeItem = ref<CheckItem | null>(null)
 const editorVisible = ref(false)
 const reportVisible = ref(false)
 const detailItemVisible = ref(false)
+const detailItemBuildingName = ref('')
 const detailItemCategoryName = ref('')
 const navScrolled = ref(false)
 const navBarVars = usePageNavVars()
@@ -91,7 +92,7 @@ const statusIconColor = computed(() => {
 })
 
 const detailItemSubtitle = computed(() => {
-  const parts = [currentBuilding.value?.name, detailItemCategoryName.value].filter(Boolean)
+  const parts = [detailItemBuildingName.value || currentBuilding.value?.name, detailItemCategoryName.value].filter(Boolean)
   return parts.join(' · ')
 })
 
@@ -253,6 +254,7 @@ function toggleCategory(category: InspectionCategory) {
 function openEditor(item: CheckItem, category?: InspectionCategory) {
   if (task.value?.status === 'completed') {
     activeItem.value = item
+    detailItemBuildingName.value = currentBuilding.value?.name ?? ''
     detailItemCategoryName.value = category?.name ?? ''
     setTimeout(() => {
       detailItemVisible.value = true
@@ -261,6 +263,15 @@ function openEditor(item: CheckItem, category?: InspectionCategory) {
   }
   activeItem.value = item
   editorVisible.value = true
+}
+
+function openReportItemDetail(payload: { item: CheckItem; buildingName?: string; categoryName?: string }) {
+  activeItem.value = payload.item
+  detailItemBuildingName.value = payload.buildingName ?? ''
+  detailItemCategoryName.value = payload.categoryName ?? ''
+  setTimeout(() => {
+    detailItemVisible.value = true
+  }, 0)
 }
 
 function saveInspection(payload: { status: CheckItem['status']; photos: string[]; description: string; impact: string }) {
@@ -543,6 +554,12 @@ onPageScroll((event) => {
       @close="editorVisible = false"
       @save="saveInspection"
     />
+    <TaskReportSheet
+      :visible="reportVisible"
+      :task="task"
+      @close="reportVisible = false"
+      @open-item="openReportItemDetail"
+    />
     <BaseSheet
       :visible="detailItemVisible"
       :title="activeItem?.name || '巡检项结果'"
@@ -595,7 +612,6 @@ onPageScroll((event) => {
         </view>
       </scroll-view>
     </BaseSheet>
-    <TaskReportSheet :visible="reportVisible" :task="task" @close="reportVisible = false" />
   </view>
 </template>
 

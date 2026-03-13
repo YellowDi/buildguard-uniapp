@@ -13,6 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
+  (e: 'open-item', payload: { item: CheckItem; buildingName?: string; categoryName?: string }): void
 }>()
 
 const viewMode = ref<ViewMode>('risk')
@@ -150,23 +151,30 @@ const buildingGroups = computed(() =>
             <view
               v-for="(entry, index) in group.entries"
               :key="`${entry.building.id}-${entry.category.id}-${entry.item.id}-${index}`"
-                class="report-entry"
-                :class="{ divided: index > 0 }"
-              >
-                <view class="report-entry-main">
-                  <view v-if="group.key === 'risk'" class="report-entry-badge report-entry-badge--risk">
-                    <view class="report-entry-risk-mark" />
-                  </view>
-                  <AppIcon
-                    v-else
-                    :name="itemStatusIcon(entry.item.status)"
-                    class="report-entry-icon"
-                    :class="`report-entry-icon--${group.key}`"
-                    :color="group.key === 'normal' ? '#1fc16b' : '#fa7319'"
-                  />
-                  <view class="report-entry-copy">
-                    <text class="report-entry-name">{{ entry.item.name }}</text>
-                    <text v-if="entry.building.name !== '园区整体'" class="report-entry-meta">
+              class="report-entry"
+              :class="{ divided: index > 0 }"
+              @tap="
+                emit('open-item', {
+                  item: entry.item,
+                  buildingName: entry.building.name,
+                  categoryName: entry.category.name,
+                })
+              "
+            >
+              <view class="report-entry-main">
+                <view v-if="group.key === 'risk'" class="report-entry-badge report-entry-badge--risk">
+                  <view class="report-entry-risk-mark" />
+                </view>
+                <AppIcon
+                  v-else
+                  :name="itemStatusIcon(entry.item.status)"
+                  class="report-entry-icon"
+                  :class="`report-entry-icon--${group.key}`"
+                  :color="group.key === 'normal' ? '#1fc16b' : '#fa7319'"
+                />
+                <view class="report-entry-copy">
+                  <text class="report-entry-name">{{ entry.item.name }}</text>
+                  <text v-if="entry.building.name !== '园区整体'" class="report-entry-meta">
                     {{ entry.building.name }} · {{ entry.category.name }}
                   </text>
                 </view>
@@ -201,6 +209,13 @@ const buildingGroups = computed(() =>
                 :key="item.id"
                 class="report-entry"
                 :class="{ divided: index > 0 }"
+                @tap="
+                  emit('open-item', {
+                    item,
+                    buildingName: building.name,
+                    categoryName: category.name,
+                  })
+                "
               >
                 <view class="report-entry-main">
                   <view v-if="item.status === 'risk'" class="report-entry-badge report-entry-badge--risk">
