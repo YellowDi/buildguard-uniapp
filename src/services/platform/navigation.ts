@@ -14,6 +14,17 @@ export function goToPage(url: string, replace = false) {
   uni.navigateTo({ url })
 }
 
+export function goBack(fallbackUrl?: string) {
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    uni.navigateBack({ delta: 1 })
+    return
+  }
+  if (fallbackUrl) {
+    goToPage(fallbackUrl, true)
+  }
+}
+
 export function goLogin() {
   goToPage(pageMap.login, true)
 }
@@ -33,4 +44,3 @@ export function goTaskDetail(id: number) {
 export function goMaintenanceDetail(id: number) {
   goToPage(`${pageMap.maintenanceDetail}?id=${id}`)
 }
-

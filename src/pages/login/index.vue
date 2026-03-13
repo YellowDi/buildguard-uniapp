@@ -81,7 +81,11 @@ function quickLogin(user: DemoUser) {
             <text>{{ error }}</text>
           </view>
 
-          <view class="btn btn-primary submit-btn" :class="{ disabled: !canSubmit }" @tap="submit">
+          <view
+            class="btn btn-primary submit-btn"
+            :class="{ disabled: !canSubmit, ready: !!canSubmit && !loading, loading }"
+            @tap="submit"
+          >
             <AppIcon v-if="loading" name="ri-loader-4-line" class="spinner" :color="isDark ? '#262626' : '#ffffff'" />
             <text>{{ loading ? '登录中…' : '登录' }}</text>
           </view>
@@ -209,17 +213,40 @@ function quickLogin(user: DemoUser) {
 
 .submit-btn {
   margin-top: 28rpx;
+  box-shadow:
+    0 10rpx 20rpx rgba(23, 23, 23, 0.08),
+    inset 0 -2rpx 0 rgba(255, 255, 255, 0.08);
+}
+
+.submit-btn.ready {
+  background: var(--text-primary);
+  color: var(--bg-card);
+}
+
+.submit-btn.ready:active {
+  opacity: 0.92;
+}
+
+.theme-dark .submit-btn.ready {
+  box-shadow:
+    0 10rpx 20rpx rgba(0, 0, 0, 0.2),
+    inset 0 -2rpx 0 rgba(23, 23, 23, 0.08);
 }
 
 .submit-btn.disabled {
   background: #e5e5e5;
   color: var(--text-tertiary);
+  box-shadow: none;
   opacity: 1;
 }
 
 .theme-dark .submit-btn.disabled {
   background: var(--bg-softer);
   color: var(--text-secondary);
+}
+
+.submit-btn.loading {
+  opacity: 0.94;
 }
 
 .spinner {
