@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseSheet from '@/components/common/BaseSheet.vue'
+import MediaGridField from '@/components/common/media-grid-field.vue'
 import { previewImages } from '@/services/platform/media'
 
 const props = defineProps<{
@@ -25,46 +26,36 @@ const emit = defineEmits<{
     max-height="90vh"
     @close="emit('close')"
   >
-    <scroll-view scroll-y class="report-scroll">
-      <view class="block">
-        <text class="label">维修前记录</text>
-        <view class="thumb-row">
-          <image
-            v-for="photo in beforeMedia"
-            :key="photo"
-            class="thumb"
-            :src="photo"
-            mode="aspectFill"
-            @tap="previewImages(beforeMedia, photo)"
-          />
+    <scroll-view scroll-y class="sheet-scroll maintenance-result__scroll">
+      <MediaGridField
+        label="维修前记录"
+        :items="beforeMedia"
+        :can-upload="false"
+        :can-remove="false"
+        previewable
+        @preview="previewImages(beforeMedia, $event)"
+      />
+
+      <MediaGridField
+        label="维修后记录"
+        :items="afterMedia"
+        :can-upload="false"
+        :can-remove="false"
+        previewable
+        @preview="previewImages(afterMedia, $event)"
+      />
+
+      <view class="form-field">
+        <text class="form-field__label">维修文字说明</text>
+        <view class="text-card">
+          <text class="text-card__content">{{ executionNote || '暂无说明' }}</text>
         </view>
       </view>
 
-      <view class="block">
-        <text class="label">维修后记录</text>
-        <view class="thumb-row">
-          <image
-            v-for="photo in afterMedia"
-            :key="photo"
-            class="thumb"
-            :src="photo"
-            mode="aspectFill"
-            @tap="previewImages(afterMedia, photo)"
-          />
-        </view>
-      </view>
-
-      <view class="block">
-        <text class="label">维修文字说明</text>
-        <view class="copy-card">
-          <text class="copy">{{ executionNote || '暂无说明' }}</text>
-        </view>
-      </view>
-
-      <view v-if="completionSummary" class="block">
-        <text class="label">维修结论</text>
-        <view class="copy-card">
-          <text class="copy">{{ completionSummary }}</text>
+      <view v-if="completionSummary" class="form-field">
+        <text class="form-field__label">维修结论</text>
+        <view class="text-card">
+          <text class="text-card__content">{{ completionSummary }}</text>
         </view>
       </view>
     </scroll-view>
@@ -77,54 +68,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.report-scroll {
+.maintenance-result__scroll {
   max-height: 62vh;
-  padding: 0 32rpx 24rpx;
-  box-sizing: border-box;
-}
-
-.block + .block {
-  margin-top: 28rpx;
-}
-
-.label {
-  display: block;
-  margin-bottom: 14rpx;
-  font-size: 24rpx;
-  line-height: 36rpx;
-  color: var(--text-primary);
-}
-
-.copy-card {
-  padding: 24rpx;
-  border-radius: 20rpx;
-  background: var(--bg-softer);
-}
-
-.copy {
-  display: block;
-  font-size: 28rpx;
-  line-height: 40rpx;
-  color: var(--text-secondary);
-}
-
-.thumb-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.thumb {
-  width: 176rpx;
-  height: 176rpx;
-  border-radius: 20rpx;
-  background: var(--bg-softer);
-}
-
-.sheet-footer {
-  padding: 24rpx 32rpx calc(env(safe-area-inset-bottom, 0px) + 12px);
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-card-elevated);
-  box-sizing: border-box;
 }
 </style>

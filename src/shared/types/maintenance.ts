@@ -1,4 +1,4 @@
-import type { TaskStatus } from './task'
+import type { TaskStatus } from './inspection'
 
 export type MaintenanceTrade = 'electric' | 'plumbing'
 export type MaintenancePriority = 'high' | 'medium' | 'low'

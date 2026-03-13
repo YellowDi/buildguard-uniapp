@@ -9,7 +9,7 @@ import type {
   CheckItemResult,
   InspectionCatalog,
   Park,
-} from '../types/task'
+} from '../types/inspection'
 import mockData from '../mock/tasks.json'
 import mockDetailData from '../mock/task-detail.json'
 import catalogData from '../mock/inspection-catalog.json'

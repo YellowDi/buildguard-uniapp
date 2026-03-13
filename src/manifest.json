@@ -6,10 +6,10 @@
   "versionCode": "100",
   "transformPx": false,
   "mp-weixin": {
-    "appid": "",
+    "appid": "__WECHAT_APP_ID__",
+    "lazyCodeLoading": "requiredComponents",
     "setting": {
       "urlCheck": false
     }
   }
 }
-

@@ -3,6 +3,7 @@ import { computed, getCurrentInstance, nextTick, ref } from 'vue'
 import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
+import PageStateCard from '@/components/common/page-state-card.vue'
 import UserCardMenu from '@/components/common/UserCardMenu.vue'
 import { clearSession, getStoredSession } from '@/shared/auth/session'
 import { fetchMaintenanceTaskList } from '@/shared/api/maintenance'
@@ -21,7 +22,7 @@ const recordHeadStuck = ref(false)
 const filterPopoverRendered = ref(false)
 const filterPopoverActive = ref(false)
 const currentUserName = ref('李电工')
-const currentUserAvatar = ref('/static/avatar-maintainer-default.png')
+const currentUserAvatar = ref('/static/avatar-maintainer-default.webp')
 const currentTradeLabel = ref('电工')
 const currentTrade = ref<'electric' | 'plumbing'>('electric')
 const { isDark } = useTheme()
@@ -83,7 +84,7 @@ async function loadTasks() {
       return
     }
     currentUserName.value = session.displayName
-    currentUserAvatar.value = session.avatarUrl || '/static/avatar-maintainer-default.png'
+    currentUserAvatar.value = session.avatarUrl || '/static/avatar-maintainer-default.webp'
     currentTrade.value = session.specialty || 'electric'
     currentTradeLabel.value = session.specialtyLabel || '电工'
     const data = await fetchMaintenanceTaskList(currentTrade.value)
@@ -196,7 +197,7 @@ onPageScroll((event) => {
       <view class="home-nav__inner">
         <view class="home-nav__main">
           <view class="home-nav__brand">
-            <image class="home-nav__logo" src="/static/temp_logo.png" mode="aspectFit" />
+            <image class="home-nav__logo" src="/static/temp_logo.webp" mode="aspectFit" />
             <text class="home-nav__brand-text">BuildGuard</text>
           </view>
         </view>
@@ -216,16 +217,22 @@ onPageScroll((event) => {
           />
         </view>
 
-        <view v-if="loading" class="state-card">
-          <AppIcon name="ri-loader-4-line" class="state-icon spinner" color="#5c5c5c" />
-          <text class="text-muted">正在加载维修任务…</text>
-        </view>
+        <PageStateCard
+          v-if="loading"
+          icon-name="ri-loader-4-line"
+          icon-color="#5c5c5c"
+          description="正在加载维修任务…"
+          spinning-icon
+        />
 
-        <view v-else-if="errorMessage" class="state-card">
-          <AppIcon name="ri-error-warning-line" class="state-icon error" color="#e5484d" />
-          <text class="text-muted">{{ errorMessage }}</text>
-          <view class="btn btn-primary retry-btn" @tap="loadTasks">重试</view>
-        </view>
+        <PageStateCard
+          v-else-if="errorMessage"
+          icon-name="ri-error-warning-line"
+          icon-color="#e5484d"
+          :description="errorMessage"
+          action-text="重试"
+          @action="loadTasks"
+        />
 
         <template v-else-if="sections.every((section) => section.tasks.length === 0)">
           <view class="card intro-card">
@@ -236,13 +243,14 @@ onPageScroll((event) => {
             <text class="intro-title">维修任务工作台</text>
             <text class="intro-copy">维修工单由检修异常项派发而来，当前账号仅展示 {{ currentTradeLabel }} 相关任务。</text>
           </view>
-          <view class="card empty-card">
-            <view class="empty-icon-wrap">
-              <AppIcon name="ri-tools-line" class="empty-icon" :color="isDark ? '#a3a3a3' : '#5c5c5c'" />
-            </view>
-            <text class="empty-title">暂无{{ currentTradeLabel }}维修任务</text>
-            <text class="empty-copy">当前没有分配给 {{ currentTradeLabel }} 的维修任务，你可以稍后刷新或切换其他演示账号查看。</text>
-          </view>
+          <PageStateCard
+            surface
+            icon-surface
+            icon-name="ri-tools-line"
+            :icon-color="isDark ? '#a3a3a3' : '#5c5c5c'"
+            :title="`暂无${currentTradeLabel}维修任务`"
+            :description="`当前没有分配给 ${currentTradeLabel} 的维修任务，你可以稍后刷新或切换其他演示账号查看。`"
+          />
         </template>
 
         <template v-else>
@@ -434,18 +442,7 @@ onPageScroll((event) => {
   padding: 12rpx 0;
 }
 
-.state-card,
-.empty-card {
-  min-height: 380rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
-}
-
 .intro-card,
-.empty-card,
 .task-card,
 .record-card {
   padding: 24rpx;
@@ -465,18 +462,7 @@ onPageScroll((event) => {
   font-size: 22rpx;
 }
 
-.empty-icon-wrap {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 32rpx;
-  background: var(--bg-softer);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.intro-title,
-.empty-title {
+.intro-title {
   display: block;
   margin-top: 16rpx;
   font-size: 36rpx;
@@ -484,32 +470,12 @@ onPageScroll((event) => {
   color: var(--text-primary);
 }
 
-.intro-copy,
-.empty-copy {
+.intro-copy {
   display: block;
   margin-top: 12rpx;
   font-size: 24rpx;
   line-height: 36rpx;
   color: var(--text-secondary);
-}
-
-.empty-copy {
-  max-width: 480rpx;
-  text-align: center;
-}
-
-.empty-icon,
-.state-icon {
-  font-size: 56rpx;
-  color: var(--text-quaternary);
-}
-
-.state-icon.error {
-  color: #e5484d;
-}
-
-.retry-btn {
-  width: 180rpx;
 }
 
 .task-card {
@@ -913,12 +879,4 @@ onPageScroll((event) => {
   color: var(--text-quaternary);
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 </style>

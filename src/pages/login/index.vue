@@ -43,7 +43,7 @@ function quickLogin(user: DemoUser) {
     <view class="shell login-shell" :style="topSafeAreaVars">
       <view class="login-center">
         <view class="brand">
-          <image class="brand-logo" src="/static/temp_logo.png" mode="aspectFit" />
+          <image class="brand-logo" src="/static/temp_logo.webp" mode="aspectFit" />
           <view class="brand-copy">
             <text class="brand-title">BuildGuard</text>
             <text class="brand-subtitle">登录以继续使用</text>

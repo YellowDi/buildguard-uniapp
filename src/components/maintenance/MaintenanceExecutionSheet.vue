@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import AppIcon from '@/components/common/app-icon.vue'
 import BaseSheet from '@/components/common/BaseSheet.vue'
+import MediaGridField from '@/components/common/media-grid-field.vue'
 import { chooseMedia } from '@/services/platform/media'
 
 const props = defineProps<{
@@ -72,50 +72,35 @@ function submit() {
 
 <template>
   <BaseSheet :visible="visible" :title="title" :subtitle="subtitle" max-height="90vh" @close="emit('close')">
-    <scroll-view scroll-y class="sheet-scroll">
-      <view class="field-group">
-        <view class="field-head">
-          <text class="field-label">维修前照片 / 视频</text>
-          <text v-if="mode === 'before'" class="field-link" @tap="onChoose('before')">上传</text>
-        </view>
-        <view class="media-grid">
-          <view v-for="(media, index) in localBeforeMedia" :key="`${media}-${index}`" class="media-card">
-            <image class="media-image" :src="media" mode="aspectFill" />
-            <view v-if="mode === 'before'" class="remove-dot" @tap="removeMedia('before', index)">
-              <AppIcon name="ri-close-line" color="#ffffff" />
-            </view>
-          </view>
-          <view v-if="mode === 'before'" class="media-upload" @tap="onChoose('before')">
-            <AppIcon name="ri-camera-line" class="upload-icon" color="#a3a3a3" />
-            <text class="upload-text">上传前记录</text>
-          </view>
-        </view>
-      </view>
+    <scroll-view scroll-y class="sheet-scroll maintenance-execution__scroll">
+      <MediaGridField
+        label="维修前照片 / 视频"
+        :items="localBeforeMedia"
+        size="regular"
+        upload-text="上传前记录"
+        upload-icon="ri-camera-line"
+        :can-upload="mode === 'before'"
+        :can-remove="mode === 'before'"
+        @upload="onChoose('before')"
+        @remove="removeMedia('before', $event)"
+      />
 
-      <view v-if="mode === 'after'" class="field-group">
-        <view class="field-head">
-          <text class="field-label">维修后照片 / 视频</text>
-          <text class="field-link" @tap="onChoose('after')">上传</text>
-        </view>
-        <view class="media-grid">
-          <view v-for="(media, index) in localAfterMedia" :key="`${media}-${index}`" class="media-card">
-            <image class="media-image" :src="media" mode="aspectFill" />
-            <view class="remove-dot" @tap="removeMedia('after', index)">
-              <AppIcon name="ri-close-line" color="#ffffff" />
-            </view>
-          </view>
-          <view class="media-upload" @tap="onChoose('after')">
-            <AppIcon name="ri-video-add-line" class="upload-icon" color="#a3a3a3" />
-            <text class="upload-text">上传后记录</text>
-          </view>
-        </view>
-      </view>
+      <MediaGridField
+        v-if="mode === 'after'"
+        label="维修后照片 / 视频"
+        :items="localAfterMedia"
+        size="regular"
+        upload-text="上传后记录"
+        upload-icon="ri-video-add-line"
+        @upload="onChoose('after')"
+        @remove="removeMedia('after', $event)"
+      />
 
-      <view v-if="mode === 'after'" class="field-group">
-        <text class="field-label">维修文字说明</text>
+      <view v-if="mode === 'after'" class="form-field">
+        <text class="form-field__label">维修文字说明</text>
         <textarea
           v-model="localExecutionNote"
-          class="text-area"
+          class="textarea-card"
           placeholder="请填写维修处理过程、替换内容、复测结果等说明。"
           maxlength="500"
         />
@@ -134,114 +119,8 @@ function submit() {
 </template>
 
 <style scoped>
-.sheet-scroll {
+.maintenance-execution__scroll {
   max-height: 62vh;
-  padding: 0 32rpx 24rpx;
-  box-sizing: border-box;
-}
-
-.field-group {
-  margin-bottom: 28rpx;
-}
-
-.field-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14rpx;
-}
-
-.field-label {
-  font-size: 24rpx;
-  line-height: 36rpx;
-  color: var(--text-primary);
-}
-
-.field-link {
-  font-size: 24rpx;
-  color: var(--brand-blue);
-}
-
-.media-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.media-card,
-.media-upload {
-  width: 176rpx;
-  height: 176rpx;
-  border-radius: 22rpx;
-  position: relative;
-  overflow: hidden;
-}
-
-.media-card {
-  background: var(--bg-softer);
-}
-
-.media-image {
-  width: 100%;
-  height: 100%;
-}
-
-.media-upload {
-  border: 1px dashed var(--border-strong);
-  background: var(--bg-muted);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-}
-
-.upload-icon {
-  font-size: 44rpx;
-  color: var(--text-quaternary);
-}
-
-.upload-text {
-  font-size: 22rpx;
-  color: var(--text-quaternary);
-}
-
-.remove-dot {
-  position: absolute;
-  top: 8rpx;
-  right: 8rpx;
-  width: 36rpx;
-  height: 36rpx;
-  border-radius: 999rpx;
-  background: rgba(0, 0, 0, 0.5);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.text-area {
-  width: 100%;
-  min-height: 180rpx;
-  border-radius: 20rpx;
-  background: var(--bg-softer);
-  padding: 24rpx;
-  box-sizing: border-box;
-  font-size: 28rpx;
-  line-height: 40rpx;
-  color: var(--text-primary);
-}
-
-.sheet-footer {
-  padding: 24rpx 32rpx calc(env(safe-area-inset-bottom, 0px) + 12px);
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-card-elevated);
-  box-sizing: border-box;
-}
-
-.sheet-actions {
-  display: flex;
-  gap: 16rpx;
 }
 
 .action-btn {
