@@ -73,37 +73,44 @@ function submit() {
 <template>
   <BaseSheet :visible="visible" :title="title" :subtitle="subtitle" max-height="90vh" @close="emit('close')">
     <scroll-view scroll-y class="sheet-scroll maintenance-execution__scroll">
-      <MediaGridField
-        label="维修前照片 / 视频"
-        :items="localBeforeMedia"
-        size="regular"
-        upload-text="上传前记录"
-        upload-icon="ri-camera-line"
-        :can-upload="mode === 'before'"
-        :can-remove="mode === 'before'"
-        @upload="onChoose('before')"
-        @remove="removeMedia('before', $event)"
-      />
+      <view class="sheet-form-stack">
+        <view class="sheet-form-item">
+          <MediaGridField
+            label="维修前照片 / 视频"
+            :items="localBeforeMedia"
+            size="regular"
+            upload-text="上传前记录"
+            upload-icon="ri-camera-line"
+            :can-upload="mode === 'before'"
+            :can-remove="mode === 'before'"
+            @upload="onChoose('before')"
+            @remove="removeMedia('before', $event)"
+          />
+        </view>
 
-      <MediaGridField
-        v-if="mode === 'after'"
-        label="维修后照片 / 视频"
-        :items="localAfterMedia"
-        size="regular"
-        upload-text="上传后记录"
-        upload-icon="ri-video-add-line"
-        @upload="onChoose('after')"
-        @remove="removeMedia('after', $event)"
-      />
+        <view v-if="mode === 'after'" class="sheet-form-item">
+          <MediaGridField
+            label="维修后照片 / 视频"
+            :items="localAfterMedia"
+            size="regular"
+            upload-text="上传后记录"
+            upload-icon="ri-video-add-line"
+            @upload="onChoose('after')"
+            @remove="removeMedia('after', $event)"
+          />
+        </view>
 
-      <view v-if="mode === 'after'" class="form-field">
-        <text class="form-field__label">维修文字说明</text>
-        <textarea
-          v-model="localExecutionNote"
-          class="textarea-card"
-          placeholder="请填写维修处理过程、替换内容、复测结果等说明。"
-          maxlength="500"
-        />
+        <view v-if="mode === 'after'" class="sheet-form-item">
+          <view class="form-field">
+            <text class="form-field__label">维修文字说明</text>
+            <textarea
+              v-model="localExecutionNote"
+              class="textarea-card"
+              placeholder="请填写维修处理过程、替换内容、复测结果等说明。"
+              maxlength="500"
+            />
+          </view>
+        </view>
       </view>
     </scroll-view>
 
@@ -121,6 +128,14 @@ function submit() {
 <style scoped>
 .maintenance-execution__scroll {
   max-height: 62vh;
+}
+
+.sheet-form-item + .sheet-form-item {
+  margin-top: 16px;
+}
+
+.sheet-form-stack :deep(.form-field + .form-field) {
+  margin-top: 0;
 }
 
 .action-btn {

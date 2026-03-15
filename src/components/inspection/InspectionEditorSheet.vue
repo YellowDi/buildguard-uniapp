@@ -65,76 +65,86 @@ function submit() {
     @close="emit('close')"
   >
     <scroll-view scroll-y class="sheet-scroll inspection-editor__scroll">
-      <view class="form-field">
-        <text class="form-field__label">情况状态</text>
-        <view class="status-grid">
-          <view
-            class="status-card"
-            :class="{ active: selectedStatus === 'normal', normal: selectedStatus === 'normal' }"
-            @tap="selectedStatus = 'normal'"
-          >
-            <AppIcon
-              name="ri-checkbox-circle-fill"
-              class="status-icon"
-              :color="selectedStatus === 'normal' ? '#1fc16b' : (isDark ? '#a3a3a3' : '#5c5c5c')"
-            />
-            <text class="status-text">一切正常</text>
-          </view>
-          <view
-            class="status-card"
-            :class="{ active: selectedStatus === 'focus', focus: selectedStatus === 'focus' }"
-            @tap="selectedStatus = 'focus'"
-          >
-            <AppIcon
-              name="ri-alert-line"
-              class="status-icon"
-              :color="selectedStatus === 'focus' ? '#fa7319' : (isDark ? '#a3a3a3' : '#5c5c5c')"
-            />
-            <text class="status-text">需重点关注</text>
-          </view>
-          <view
-            class="status-card"
-            :class="{ active: selectedStatus === 'risk', risk: selectedStatus === 'risk' }"
-            @tap="selectedStatus = 'risk'"
-          >
-            <AppIcon
-              name="ri-error-warning-fill"
-              class="status-icon"
-              :color="selectedStatus === 'risk' ? '#e5484d' : (isDark ? '#a3a3a3' : '#5c5c5c')"
-            />
-            <text class="status-text">存在风险</text>
+      <view class="sheet-form-stack">
+        <view class="sheet-form-item">
+          <view class="form-field">
+            <text class="form-field__label">情况状态</text>
+            <view class="status-grid">
+              <view
+                class="status-card"
+                :class="{ active: selectedStatus === 'normal', normal: selectedStatus === 'normal' }"
+                @tap="selectedStatus = 'normal'"
+              >
+                <AppIcon
+                  name="ri-checkbox-circle-fill"
+                  class="status-icon"
+                  :color="selectedStatus === 'normal' ? '#1fc16b' : (isDark ? '#a3a3a3' : '#5c5c5c')"
+                />
+                <text class="status-text">一切正常</text>
+              </view>
+              <view
+                class="status-card"
+                :class="{ active: selectedStatus === 'focus', focus: selectedStatus === 'focus' }"
+                @tap="selectedStatus = 'focus'"
+              >
+                <AppIcon
+                  name="ri-alert-line"
+                  class="status-icon"
+                  :color="selectedStatus === 'focus' ? '#fa7319' : (isDark ? '#a3a3a3' : '#5c5c5c')"
+                />
+                <text class="status-text">需重点关注</text>
+              </view>
+              <view
+                class="status-card"
+                :class="{ active: selectedStatus === 'risk', risk: selectedStatus === 'risk' }"
+                @tap="selectedStatus = 'risk'"
+              >
+                <AppIcon
+                  name="ri-error-warning-fill"
+                  class="status-icon"
+                  :color="selectedStatus === 'risk' ? '#e5484d' : (isDark ? '#a3a3a3' : '#5c5c5c')"
+                />
+                <text class="status-text">存在风险</text>
+              </view>
+            </view>
           </view>
         </view>
-      </view>
 
-      <MediaGridField
-        label="现场照片"
-        :items="photos"
-        size="compact"
-        upload-text="上传照片"
-        upload-icon="ri-camera-line"
-        @upload="onChooseImages"
-        @remove="removePhoto"
-      />
+        <view class="sheet-form-item">
+          <MediaGridField
+            label="现场照片"
+            :items="photos"
+            size="compact"
+            upload-text="上传照片"
+            upload-icon="ri-camera-line"
+            @upload="onChooseImages"
+            @remove="removePhoto"
+          />
+        </view>
 
-      <view class="form-field">
-        <text class="form-field__label">问题描述</text>
-        <textarea
-          v-model="description"
-          class="textarea-card"
-          placeholder="请描述发现的问题…"
-          maxlength="400"
-        />
-      </view>
+        <view class="sheet-form-item">
+          <view class="form-field">
+            <text class="form-field__label">问题描述</text>
+            <textarea
+              v-model="description"
+              class="textarea-card"
+              placeholder="请描述发现的问题…"
+              maxlength="400"
+            />
+          </view>
+        </view>
 
-      <view class="form-field">
-        <text class="form-field__label">影响评估</text>
-        <textarea
-          v-model="impact"
-          class="textarea-card"
-          placeholder="请评估该问题的影响…"
-          maxlength="400"
-        />
+        <view class="sheet-form-item">
+          <view class="form-field">
+            <text class="form-field__label">影响评估</text>
+            <textarea
+              v-model="impact"
+              class="textarea-card"
+              placeholder="请评估该问题的影响…"
+              maxlength="400"
+            />
+          </view>
+        </view>
       </view>
     </scroll-view>
 
@@ -147,6 +157,14 @@ function submit() {
 <style scoped>
 .inspection-editor__scroll {
   max-height: 60vh;
+}
+
+.sheet-form-item + .sheet-form-item {
+  margin-top: 16px;
+}
+
+.sheet-form-stack :deep(.form-field + .form-field) {
+  margin-top: 0;
 }
 
 .status-grid {
