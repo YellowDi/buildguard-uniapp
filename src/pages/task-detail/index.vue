@@ -60,6 +60,7 @@ const checkedItems = computed(() =>
 )
 
 const progressPercent = computed(() => (totalItems.value ? Math.round((checkedItems.value / totalItems.value) * 100) : 0))
+const animatedProgressPercent = ref(0)
 const sectionTitle = computed(() =>
   currentBuilding.value ? `${currentBuilding.value.name} · 巡检项目` : '巡检项目',
 )
@@ -362,6 +363,16 @@ watch(selectedBuildingIndex, () => {
   expandedCategoryIds.value = []
 })
 
+watch(
+  progressPercent,
+  (value) => {
+    setTimeout(() => {
+      animatedProgressPercent.value = value
+    }, 0)
+  },
+  { immediate: true },
+)
+
 onLoad((query) => {
   taskId.value = Number(query?.id || 0)
   loadTask(taskId.value)
@@ -459,7 +470,7 @@ onPageScroll((event) => {
                 <view
                   class="progress-bar"
                   :class="{ complete: progressPercent === 100 }"
-                  :style="{ width: `${progressPercent}%` }"
+                  :style="{ width: `${animatedProgressPercent}%` }"
                 />
               </view>
             </view>
@@ -749,6 +760,7 @@ onPageScroll((event) => {
   height: 100%;
   border-radius: inherit;
   background: var(--text-primary);
+  transition: width 0.32s ease;
 }
 
 .theme-dark .progress-bar {
