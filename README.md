@@ -9,6 +9,19 @@ pnpm install
 pnpm dev:mp-weixin
 ```
 
+## 环境变量与敏感信息
+
+本仓库通过本地 `.env` 管理微信 `AppID`，不在源码中提交真实值。
+
+```bash
+cp .env.example .env
+```
+
+```env
+WECHAT_APP_ID=你的微信小程序AppID
+VITE_WECHAT_APP_ID=你的微信小程序AppID
+```
+
 ## 构建
 
 ```bash

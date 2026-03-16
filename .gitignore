@@ -3,3 +3,7 @@ dist
 *.local
 .DS_Store
 project.private.config.json
+.env
+.env.local
+.env.*.local
+!.env.example
